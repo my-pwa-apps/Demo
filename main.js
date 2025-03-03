@@ -1246,6 +1246,14 @@ document.addEventListener('DOMContentLoaded', () => {
             iconElement.className = 'fas fa-heart';
         }
     }
+    
+    // Update view favorites button to use list icon
+    if (viewFavoritesBtn) {
+        viewFavoritesBtn.innerHTML = '<i class="fas fa-list"></i>';
+    }
+    
+    // Make sure navigation buttons are updated initially
+    updateNavigationButtons();
 });
 
 // New function to update navigation buttons state
