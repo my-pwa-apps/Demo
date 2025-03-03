@@ -43,21 +43,23 @@ document.addEventListener('DOMContentLoaded', () => {
         nextComicBtn.classList.toggle('disabled', isLastComic);
     };
 
-    // New function to count and update favorites
+    // New function to count and update favorites - Fixed calculation for specific comic
     const updateFavoritesCount = async (comicDate) => {
         try {
-            // Get all users' favorites for this comic
+            // Get all users' favorites
             const snapshot = await firebase.database().ref('favorites').once('value');
             const allUserFavorites = snapshot.val() || {};
             
             let count = 0;
             
-            // Count how many users have favorited this comic
+            // Count how many users have favorited this specific comic date
             Object.values(allUserFavorites).forEach(userFavorites => {
                 if (userFavorites && userFavorites[comicDate]) {
                     count++;
                 }
             });
+            
+            console.log(`Counted ${count} favorites for comic date: ${comicDate}`);
             
             // Update the counter in the UI and hide if zero
             if (favoritesCountElement && favoritesCounter) {

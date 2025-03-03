@@ -825,10 +825,11 @@ body {
     opacity: 0.95;
 }
 
-/* Favorites counter overlay - Repositioned below the comic */
+/* Favorites counter overlay - Repositioned to bottom right of the comic */
 .favorites-counter {
-    position: relative; /* Changed from absolute to relative */
-    margin: 5px auto 0; /* Center horizontally and add margin top */
+    position: absolute; /* Changed from relative to absolute */
+    bottom: 10px; /* Position at the bottom */
+    right: 10px; /* Position at the right */
     display: flex;
     align-items: center;
     background-color: rgba(255, 255, 255, 0.7);
@@ -840,6 +841,7 @@ body {
     transition: all 0.3s ease;
     opacity: 0.85;
     max-width: fit-content; /* Ensure it's only as wide as its content */
+    margin: 0; /* Remove the auto margin */
 }
 
 .favorites-counter:hover {
@@ -959,7 +961,8 @@ body {
     .favorites-counter {
         padding: 3px 6px;
         font-size: 0.75rem;
-        margin-top: 3px;
+        bottom: 5px; /* Smaller distance from bottom on mobile */
+        right: 5px; /* Smaller distance from right on mobile */
     }
 }
 

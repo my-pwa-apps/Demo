@@ -77,13 +77,15 @@
     </button>
     
     <main class="main-content">
-        <!-- Simplify comic structure - remove nested containers -->
-        <img id="comic-img" class="comic-image" src="" alt="Garfield Comic">
-        
-        <!-- Move favorites counter here - after the comic image -->
-        <div class="favorites-counter">
-            <i class="fas fa-heart"></i>
-            <span id="favorites-count">0</span>
+        <!-- Add position-relative to the container of the comic image -->
+        <div class="comic-container position-relative">
+            <img id="comic-img" class="comic-image" src="" alt="Garfield Comic">
+            
+            <!-- Move favorites counter inside the comic container -->
+            <div class="favorites-counter">
+                <i class="fas fa-heart"></i>
+                <span id="favorites-count">0</span>
+            </div>
         </div>
         
         <div class="comic-controls">
