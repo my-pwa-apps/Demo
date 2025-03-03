@@ -137,7 +137,7 @@ class ComicsAPI {
         }
     }
 
-    async addComment(comicDate, commentText) {
+    async addComment(comicDate, commentText, parentId = null) {
         if (!commentText.trim()) {
             throw new Error('Comment cannot be empty');
         }
@@ -148,11 +148,16 @@ class ComicsAPI {
             timestamp: firebase.database.ServerValue.TIMESTAMP
         };
         
+        // If this is a reply, add the parentId
+        if (parentId) {
+            newComment.parentId = parentId;
+        }
+        
         try {
             const commentsRef = this.db.ref(`comments/${comicDate}`);
             const newCommentRef = commentsRef.push(); 
             await newCommentRef.set(newComment);
-            return newComment;
+            return { ...newComment, id: newCommentRef.key };
         } catch (error) {
             console.error('Error adding comment:', error);
             throw error;

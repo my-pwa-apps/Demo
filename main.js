@@ -158,6 +158,13 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Update navigation buttons based on current date
         updateNavigationButtons();
+        
+        // Also update favorite button to ensure correct state when returning to a comic
+        const storageDate = formatDateForStorage(new Date(formattedDate));
+        updateFavoriteButton(storageDate);
+        
+        // Re-fetch favorites count when updating UI for proper display
+        updateFavoritesCount(storageDate);
     };
 
     const showLoadingIndicator = () => {
@@ -189,8 +196,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const updateFavoriteButton = (date) => {
         if (favorites[date]) {
             favoriteComicBtn.classList.add('favorited');
-            favoriteComicBtn.querySelector('i').style.color = getComputedStyle(document.documentElement)
-                .getPropertyValue('--secondary-color').trim();
+            // Always consistently set to red for favorited state (#ff3b30), not orange
+            favoriteComicBtn.querySelector('i').style.color = '#ff3b30';
         } else {
             favoriteComicBtn.classList.remove('favorited');
             favoriteComicBtn.querySelector('i').style.color = '';
@@ -461,6 +468,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Simplified Comments functionality - Debounce comment list updates
     let commentsTimeout;
+    let replyingToComment = null; // Track which comment we're replying to
+
     const displayComments = (date) => {
         clearTimeout(commentsTimeout);
         commentsTimeout = setTimeout(async () => {
@@ -481,66 +490,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
                 
-                // Limit to most recent 10 comments to keep display compact
-                const recentComments = Array.isArray(comments) ? comments.slice(-10) : [];
-                console.log('Recent comments to display:', recentComments);
+                // Organize comments into threads
+                const threadedComments = organizeCommentsIntoThreads(comments);
                 
-                recentComments.forEach(comment => {
-                    console.log('Processing comment:', comment);
-                    const commentElement = document.createElement('div');
-                    commentElement.classList.add('comment');
-                    
-                    // Format date in a more compact way with time
-                    let dateStr = 'Unknown date';
-                    try {
-                        if (comment.timestamp) {
-                            const commentDate = new Date(comment.timestamp);
-                            dateStr = commentDate.toLocaleDateString(undefined, {
-                                month: 'short', 
-                                day: 'numeric'
-                            }) + ' ' + commentDate.toLocaleTimeString(undefined, {
-                                hour: '2-digit',
-                                minute: '2-digit'
-                            });
-                        }
-                    } catch (e) {
-                        console.error('Error formatting comment date:', e);
-                    }
-                    
-                    // Check if this comment belongs to the current user
-                    const isCurrentUserComment = comment.username === api.username;
-                    
-                    commentElement.innerHTML = `
-                        <div class="comment-header">
-                            <span class="comment-user">${comment.username || 'Anonymous'}</span>
-                            <span class="comment-date">${dateStr}</span>
-                            ${isCurrentUserComment ? '<button class="delete-comment-btn" title="Delete comment"><i class="fas fa-trash"></i></button>' : ''}
-                        </div>
-                        <div class="comment-text">${comment.text}</div>
-                    `;
-                    
-                    // Add event listener for delete button if this is user's comment
-                    if (isCurrentUserComment) {
-                        const deleteBtn = commentElement.querySelector('.delete-comment-btn');
-                        deleteBtn.addEventListener('click', async () => {
-                            try {
-                                await api.deleteComment(formattedDate, comment.id);
-                                commentElement.remove();
-                                showFeedback('Comment deleted');
-                                
-                                // If there are no more comments, just leave it empty
-                                if (commentsList.children.length === 0) {
-                                    // Don't add any placeholder
-                                }
-                            } catch (error) {
-                                console.error('Error deleting comment:', error);
-                                showFeedback('Failed to delete comment', true);
-                            }
-                        });
-                    }
-                    
-                    fragment.appendChild(commentElement);
-                });
+                // Render the threaded comments
+                renderCommentThreads(threadedComments, fragment, formattedDate);
                 
                 // Update comments list in one go
                 commentsList.innerHTML = '';
@@ -549,12 +503,178 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Scroll to the most recent comment
                 commentsList.scrollTop = commentsList.scrollHeight;
+                
+                // Reset the reply state when comments are refreshed
+                resetReplyState();
             } catch (error) {
                 console.error('Error loading comments:', error);
                 // Don't show "Unable to load comments" - just leave it empty
                 commentsList.innerHTML = '';
             }
         }, 200); // 200ms debounce
+    };
+
+    // Function to organize comments into threads
+    const organizeCommentsIntoThreads = (comments) => {
+        const rootComments = [];
+        const commentMap = {};
+        
+        // First pass: create a map of comments by ID
+        comments.forEach(comment => {
+            comment.replies = [];
+            commentMap[comment.id] = comment;
+        });
+        
+        // Second pass: organize into parent-child relationships
+        comments.forEach(comment => {
+            if (comment.parentId && commentMap[comment.parentId]) {
+                // This is a reply - add to parent's replies
+                commentMap[comment.parentId].replies.push(comment);
+            } else {
+                // This is a root comment
+                rootComments.push(comment);
+            }
+        });
+        
+        // Sort root comments by timestamp
+        rootComments.sort((a, b) => {
+            return (a.timestamp || 0) - (b.timestamp || 0);
+        });
+        
+        return rootComments;
+    };
+
+    // Function to render comments with their replies
+    const renderCommentThreads = (comments, container, formattedDate, level = 0) => {
+        comments.forEach(comment => {
+            // Create comment element
+            const commentElement = createCommentElement(comment, formattedDate, level);
+            container.appendChild(commentElement);
+            
+            // Recursively render replies if any
+            if (comment.replies && comment.replies.length > 0) {
+                // Sort replies by timestamp
+                comment.replies.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+                
+                // Create a wrapper for all replies to enable collapsing
+                const repliesWrapper = document.createElement('div');
+                repliesWrapper.className = 'replies-wrapper';
+                repliesWrapper.dataset.parentId = comment.id;
+                container.appendChild(repliesWrapper);
+                
+                // Add replies to the wrapper
+                renderCommentThreads(comment.replies, repliesWrapper, formattedDate, level + 1);
+                
+                // Add collapse/expand button to the parent comment if it has replies
+                const commentHeader = commentElement.querySelector('.comment-header');
+                const replyCount = comment.replies.length;
+                
+                const toggleBtn = document.createElement('button');
+                toggleBtn.className = 'toggle-replies-btn';
+                toggleBtn.innerHTML = `<i class="fas fa-chevron-down"></i> <span class="reply-count">${replyCount}</span>`;
+                toggleBtn.title = `${replyCount} ${replyCount === 1 ? 'reply' : 'replies'}`;
+                
+                toggleBtn.addEventListener('click', () => {
+                    const isCollapsed = toggleBtn.classList.toggle('collapsed');
+                    
+                    // Find all replies to this comment
+                    const replies = document.querySelectorAll(`.comment-reply[data-parent-id="${comment.id}"]`);
+                    replies.forEach(reply => {
+                        if (isCollapsed) {
+                            reply.classList.add('collapsed');
+                        } else {
+                            reply.classList.remove('collapsed');
+                        }
+                    });
+                    
+                    // Find the replies wrapper and toggle it
+                    const repliesWrapper = document.querySelector(`.replies-wrapper[data-parent-id="${comment.id}"]`);
+                    if (repliesWrapper) {
+                        if (isCollapsed) {
+                            repliesWrapper.style.display = 'none';
+                        } else {
+                            repliesWrapper.style.display = 'block';
+                        }
+                    }
+                });
+                
+                commentHeader.appendChild(toggleBtn);
+            }
+        });
+    };
+
+    // Function to create a single comment element
+    const createCommentElement = (comment, formattedDate, level = 0) => {
+        const commentElement = document.createElement('div');
+        commentElement.classList.add('comment');
+        commentElement.dataset.commentId = comment.id;
+        
+        // Add nesting class based on level
+        if (level > 0) {
+            commentElement.classList.add('comment-reply');
+            commentElement.dataset.parentId = comment.parentId;
+            commentElement.style.marginLeft = `${level * 15}px`;
+        }
+        
+        // Format date in a compact way with time
+        let dateStr = 'Unknown date';
+        try {
+            if (comment.timestamp) {
+                const commentDate = new Date(comment.timestamp);
+                dateStr = commentDate.toLocaleDateString(undefined, {
+                    month: 'short', 
+                    day: 'numeric'
+                }) + ' ' + commentDate.toLocaleTimeString(undefined, {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+        } catch (e) {
+            console.error('Error formatting comment date:', e);
+        }
+        
+        // Check if this comment belongs to the current user
+        const isCurrentUserComment = comment.username === api.username;
+        
+        commentElement.innerHTML = `
+            <div class="comment-header">
+                <span class="comment-user">${comment.username || 'Anonymous'}</span>
+                <span class="comment-date">${dateStr}</span>
+                <div class="comment-actions">
+                    <button class="reply-comment-btn" title="Reply to comment"><i class="fas fa-reply"></i></button>
+                    ${isCurrentUserComment ? '<button class="delete-comment-btn" title="Delete comment"><i class="fas fa-trash"></i></button>' : ''}
+                </div>
+            </div>
+            <div class="comment-text">${comment.text}</div>
+        `;
+        
+        // Add event listener for delete button if this is user's comment
+        if (isCurrentUserComment) {
+            const deleteBtn = commentElement.querySelector('.delete-comment-btn');
+            deleteBtn.addEventListener('click', async () => {
+                try {
+                    await api.deleteComment(formattedDate, comment.id);
+                    commentElement.remove();
+                    showFeedback('Comment deleted');
+                    
+                    // Refresh comments to ensure correct display of threads
+                    setTimeout(() => {
+                        displayComments(currentDate);
+                    }, 500);
+                } catch (error) {
+                    console.error('Error deleting comment:', error);
+                    showFeedback('Failed to delete comment', true);
+                }
+            });
+        }
+        
+        // Add event listener for reply button
+        const replyBtn = commentElement.querySelector('.reply-comment-btn');
+        replyBtn.addEventListener('click', () => {
+            setReplyingTo(comment);
+        });
+        
+        return commentElement;
     };
 
     // Favorites functionality - Optimize favorites display
@@ -987,7 +1107,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 await api.removeFavorite(formattedDate);
                 delete favorites[formattedDate];
                 favoriteComicBtn.classList.remove('favorited');
-                // For heart icon, we want it gray when not favorited
+                // For heart icon, ensure we use a consistent color scheme
                 favoriteComicBtn.querySelector('i').style.color = '';
                 showFeedback('Removed from favorites');
             } else {
@@ -999,8 +1119,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 await api.addFavorite(comicData);
                 favorites[formattedDate] = comicData;
                 favoriteComicBtn.classList.add('favorited');
-                // For heart icon, we want it red when favorited
-                favoriteComicBtn.querySelector('i').style.color = '#ff3b30'; // Red for heart
+                // For heart icon, ensure we use red (#ff3b30) consistently
+                favoriteComicBtn.querySelector('i').style.color = '#ff3b30';
                 showFeedback('Added to favorites');
             }
             
@@ -1030,8 +1150,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         submitCommentBtn.disabled = true;
         try {
-            await api.addComment(formatDate(currentDate), comment);
+            // Check if we're replying to a comment
+            const parentId = replyingToComment ? replyingToComment.id : null;
+            
+            await api.addComment(formatDate(currentDate), comment, parentId);
             commentInput.value = '';
+            
+            // Reset reply state
+            resetReplyState();
+            
             // Add a slight delay before refreshing comments
             setTimeout(() => {
                 displayComments(currentDate);

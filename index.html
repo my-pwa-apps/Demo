@@ -77,11 +77,11 @@
     </button>
     
     <main class="main-content">
-        <!-- Changed from comic-container to comic-wrapper to avoid the hidden class -->
-        <div class="comic-wrapper position-relative">
+        <!-- Add comic-container ID for more targeted CSS and JS -->
+        <div id="comic-container" class="comic-wrapper position-relative">
             <img id="comic-img" class="comic-image" src="" alt="Garfield Comic">
             
-            <!-- Counter remains inside the wrapper -->
+            <!-- Counter inside the wrapper but now visible -->
             <div class="favorites-counter">
                 <i class="fas fa-heart"></i>
                 <span id="favorites-count">0</span>

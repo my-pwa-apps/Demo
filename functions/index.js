@@ -11,7 +11,7 @@ exports.helloWorld = functions.https.onCall((data, context) => {
 
 // Your existing functions
 exports.addComment = functions.https.onCall(async (data, context) => {
-  const { comicDate, commentText, username } = data;
+  const { comicDate, commentText, username, parentId } = data;
 
   if (!comicDate || !commentText || !username) {
     throw new functions.https.HttpsError('invalid-argument', 'Missing required parameters.');
@@ -22,6 +22,11 @@ exports.addComment = functions.https.onCall(async (data, context) => {
     text: commentText,
     timestamp: admin.database.ServerValue.TIMESTAMP // Use server timestamp
   };
+  
+  // Add parentId if this is a reply
+  if (parentId) {
+    newComment.parentId = parentId;
+  }
 
   try {
     const ref = admin.database().ref(`comments/${comicDate}`).push();

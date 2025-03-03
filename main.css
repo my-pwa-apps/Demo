@@ -138,7 +138,7 @@ body {
     border: 1px solid var(--comic-border); /* Add border that changes with theme */
 }
 
-/* New comic-wrapper class to replace comic-container */
+/* New comic-wrapper class with improved positioning for counter */
 .comic-wrapper {
     display: flex;
     flex-direction: column;
@@ -149,7 +149,7 @@ body {
     margin: 0 auto;
     padding: 0;
     border-radius: 4px;
-    overflow: hidden;
+    overflow: visible; /* Changed from hidden to visible to prevent counter clipping */
     position: relative; /* Ensure position relative is applied */
     min-height: 100px; /* Add minimum height so counter is always visible */
 }
@@ -427,7 +427,7 @@ body {
     box-shadow: none;
 }
 
-/* Comments Header with Username - Simplified */
+/* Comments Header with Username - Updated with reply support */
 .comment-header {
     display: flex;
     justify-content: space-between;
@@ -444,6 +444,151 @@ body {
 .comment-date {
     font-size: 0.75rem;
     color: #777;
+    margin-left: auto;
+    margin-right: 5px;
+}
+
+/* Comment actions container */
+.comment-actions {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Reply Comment Button */
+.reply-comment-btn {
+    background: none;
+    border: none;
+    color: #2196F3; /* Blue color for reply */
+    cursor: pointer;
+    padding: 2px 5px;
+    font-size: 0.8rem;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.reply-comment-btn:hover {
+    opacity: 1;
+}
+
+/* Delete Comment Button - unchanged but now in comment-actions */
+.delete-comment-btn {
+    background: none;
+    border: none;
+    color: #ff6347; /* Tomato red */
+    cursor: pointer;
+    padding: 2px 5px;
+    font-size: 0.8rem;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.delete-comment-btn:hover {
+    opacity: 1;
+}
+
+/* Reply comments styling - Adding collapsible functionality */
+.comment-reply {
+    position: relative;
+    padding-left: 10px;
+    border-left: 2px solid rgba(33, 150, 243, 0.3); /* Light blue left border */
+    margin-left: 15px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    transition: height 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
+}
+
+/* Collapsed state for replies */
+.comment-reply.collapsed {
+    height: 0;
+    opacity: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    border-left: none;
+}
+
+/* Collapse/expand button for comments with replies */
+.toggle-replies-btn {
+    background: none;
+    border: none;
+    color: #2196F3;
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 2px 5px;
+    margin-left: 5px;
+    opacity: 0.7;
+    transition: opacity 0.2s, transform 0.3s;
+    display: flex;
+    align-items: center;
+}
+
+.toggle-replies-btn:hover {
+    opacity: 1;
+}
+
+.toggle-replies-btn i {
+    margin-right: 3px;
+    transition: transform 0.3s;
+}
+
+.toggle-replies-btn.collapsed i.fa-chevron-down {
+    transform: rotate(-90deg);
+}
+
+/* Reply count badge */
+.reply-count {
+    background-color: rgba(33, 150, 243, 0.2);
+    color: #2196F3;
+    border-radius: 10px;
+    padding: 0 6px;
+    font-size: 0.7rem;
+    margin-left: 5px;
+}
+
+.dark-mode .reply-count {
+    background-color: rgba(33, 150, 243, 0.3);
+}
+
+/* Highlight the comment we're replying to */
+.comment.replying-to {
+    background: rgba(33, 150, 243, 0.1);
+    border-left: 2px solid #2196F3;
+}
+
+.dark-mode .comment.replying-to {
+    background: rgba(33, 150, 243, 0.2);
+}
+
+/* Reply indicator */
+.reply-indicator {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 10px;
+    background-color: rgba(33, 150, 243, 0.1);
+    border-radius: 4px;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+    color: var(--text-color);
+}
+
+.cancel-reply-btn {
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    padding: 0 5px;
+    font-size: 1rem;
+    transition: color 0.2s;
+}
+
+.cancel-reply-btn:hover {
+    color: #ff6347; /* Red on hover */
+}
+
+.dark-mode .reply-indicator {
+    background-color: rgba(33, 150, 243, 0.2);
 }
 
 #comment-input {
@@ -842,11 +987,11 @@ body {
     opacity: 0.95;
 }
 
-/* Favorites counter overlay - Better positioning for responsive design */
+/* Favorites counter overlay - Fixed positioning within comic-wrapper */
 .favorites-counter {
     position: absolute;
-    bottom: 0; /* Changed from 10px to 0 to position at the very bottom */
-    right: 0; /* Changed from 10px to 0 to stick to edge */
+    bottom: 0; 
+    right: 0;
     display: flex;
     align-items: center;
     background-color: rgba(255, 255, 255, 0.7);
@@ -859,7 +1004,7 @@ body {
     opacity: 0.85;
     max-width: fit-content;
     margin: 0;
-    pointer-events: none; /* Allow clicks through the counter */
+    /* Remove pointer-events none so we can interact with it */
 }
 
 .favorites-counter:hover {
