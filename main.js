@@ -381,10 +381,10 @@ document.addEventListener('DOMContentLoaded', () => {
         commentsTimeout = setTimeout(async () => {
             try {
                 const formattedDate = formatDate(date);
-                const comments = await api.getComments(formattedDate); formattedDate);
+                console.log('Displaying comments for formatted date:', formattedDate);
                 const comments = await api.getComments(formattedDate);
-                // Use document fragment for efficient DOM manipulation
-                const fragment = document.createDocumentFragment();
+                console.log('Retrieved comments:', comments);
+                
                 // Use document fragment for efficient DOM manipulation
                 const fragment = document.createDocumentFragment();
                 
@@ -607,267 +607,266 @@ document.addEventListener('DOMContentLoaded', () => {
         if (Notification.permission === 'granted' && 'serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistration().then(registration => {
                 if (registration) {
-                    registration.showNotification(title, {tion code to avoid the error
+                    registration.showNotification(title, {
                         body, icon, tag: 'new-comic'
                     });
-                }tSubscription()
+                }
             });
         }
-    };oUint8Array('BKGdJva8Kk_ISzgcOMG86r5yEjwEIa8DnGlX08lAy55ga2fFymM0tUXzhaDPu3g71MRYLsFqlG7Ilpm_48BW4NM'); 
-    ubscribe({
-    // Service worker setupe,
-    if ('serviceWorker' in navigator) {erKey
+    };
+    
+    // Service worker setup
+    if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('service-worker.js')
-            .then(registration => { console.warn('Push notification subscription failed:', error);
-                console.log('Service Worker registered');   });
-                // Set up push notifications }
-                if ('PushManager' in window) {       });
-                    registration.pushManager.getSubscription()  }
+            .then(registration => {
+                console.log('Service Worker registered');
+                // Comment out push notification code to avoid the error
+                /* 
+                if ('PushManager' in window) {
+                    registration.pushManager.getSubscription()
                         .then(subscription => {
-                            if (!subscription) {       })
-                                const applicationServerKey = urlB64ToUint8Array('BKGdJva8Kk_ISzgcOMG86r5yEjwEIa8DnGlX08lAy55ga2fFymM0tUXzhaDPu3g71MRYLsFqlG7Ilpm_48BW4NM'); // Replace with your actual VAPID key            .catch(error => console.error('Service Worker registration failed:', error));
+                            if (!subscription) {
+                                const applicationServerKey = urlB64ToUint8Array('BKGdJva8Kk_ISzgcOMG86r5yEjwEIa8DnGlX08lAy55ga2fFymM0tUXzhaDPu3g71MRYLsFqlG7Ilpm_48BW4NM'); 
                                 registration.pushManager.subscribe({
                                     userVisibleOnly: true,
                                     applicationServerKey
                                 }).catch(error => {
-                                    console.warn('Push notification subscription failed:', error);64String.length % 4) % 4);
-                                });g, '+').replace(/_/g, '/');
+                                    console.warn('Push notification subscription failed:', error);
+                                });
                             }
-                        });length);
-                }or (let i = 0; i < rawData.length; ++i) {
-            })= rawData.charCodeAt(i);
-            .catch(error => console.error('Service Worker registration failed:', error));  }
-    }        return outputArray;
+                        });
+                }
+                */
+            })
+            .catch(error => console.error('Service Worker registration failed:', error));
+    }
 
-    // Helper for push notifications
-    const urlB64ToUint8Array = (base64String) => {dically
+    // Helper for push notifications (kept but not used to avoid errors)
+    const urlB64ToUint8Array = (base64String) => {
         const padding = '='.repeat((4 - base64String.length % 4) % 4);
         const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
         const rawData = window.atob(base64);
-        const outputArray = new Uint8Array(rawData.length);        const comicUrl = `https://www.gocomics.com/garfield/${formattedDate}`;
-        for (let i = 0; i < rawData.length; ++i) {= `https://api.allorigins.win/get?url=${encodeURIComponent(comicUrl)}`;
+        const outputArray = new Uint8Array(rawData.length);
+        for (let i = 0; i < rawData.length; ++i) {
             outputArray[i] = rawData.charCodeAt(i);
         }
         return outputArray;
     };
 
-    // Check for new comics periodicallyser.parseFromString(data.contents, 'text/html');
+    // Check for new comics periodically
     const checkForNewComic = () => {
-        const today = new Date();f (comicSrc) {
-        const formattedDate = formatDate(today);      showNotification('New Garfield Comic Available!', 'Click to view the latest comic', comicSrc);
+        const today = new Date();
+        const formattedDate = formatDate(today);
         const comicUrl = `https://www.gocomics.com/garfield/${formattedDate}`;
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(comicUrl)}`;      })
-Error checking for new comic:', error));
-        fetch(proxyUrl)    };
-            .then(response => response.json())wComic, 3600000);
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(comicUrl)}`;
+        
+        fetch(proxyUrl)
+            .then(response => response.json())
             .then(data => {
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(data.contents, 'text/html');
                 const comicSrc = doc.querySelector('.item-comic-image img')?.src;
-                if (comicSrc) {const savedTheme = localStorage.getItem('theme');
-                    showNotification('New Garfield Comic Available!', 'Click to view the latest comic', comicSrc);('(prefers-color-scheme: dark)').matches;
+                if (comicSrc) {
+                    showNotification('New Garfield Comic Available!', 'Click to view the latest comic', comicSrc);
                 }
-            })ystem setting
-            .catch(error => console.error('Error checking for new comic:', error));{
+            })
+            .catch(error => console.error('Error checking for new comic:', error));
     };
-    setInterval(checkForNewComic, 3600000);ToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
-);
+    setInterval(checkForNewComic, 3600000);
+
     // Dark mode functions
     const initTheme = () => {
-        // Check for saved user preference   modeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>'; // Fixed missing quote
-        const savedTheme = localStorage.getItem('theme');      themeColor.setAttribute('content', '#FF6F00');
-        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;    }
+        // Check for saved user preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
         
         // Set initial theme based on preference or system setting
-        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {t toggleDarkMode = () => {
-            document.body.classList.add('dark-mode');cument.body.classList.toggle('dark-mode');
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            document.body.classList.add('dark-mode');
             modeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
             themeColor.setAttribute('content', '#121212');
-        } else {de ? 
-            document.body.classList.remove('dark-mode');    '<i class="fas fa-sun"></i>' : 
-            modeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>'; // Fixed missing quotei>';
+        } else {
+            document.body.classList.remove('dark-mode');
+            modeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>'; // Fixed missing quote
             themeColor.setAttribute('content', '#FF6F00');
-        }// Update theme-color meta tag
-    };('content', isDarkMode ? '#121212' : '#FF6F00');
+        }
+    };
     
-    const toggleDarkMode = () => {// Save user preference
-        const isDarkMode = document.body.classList.toggle('dark-mode');Item('theme', isDarkMode ? 'dark' : 'light');
+    const toggleDarkMode = () => {
+        const isDarkMode = document.body.classList.toggle('dark-mode');
         
-        // Update button icon  // Show feedback
-        modeToggleBtn.innerHTML = isDarkMode ?     showFeedback(`${isDarkMode ? 'Dark' : 'Light'} mode enabled`);
+        // Update button icon
+        modeToggleBtn.innerHTML = isDarkMode ? 
             '<i class="fas fa-sun"></i>' : 
             '<i class="fas fa-moon"></i>';
-        // Add event listener for dark mode toggle
-        // Update theme-color meta tag toggleDarkMode);
+        
+        // Update theme-color meta tag
         themeColor.setAttribute('content', isDarkMode ? '#121212' : '#FF6F00');
         
-        // Save user preferenceers-color-scheme: dark)').addEventListener('change', e => {
-        localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');o-switch if user hasn't set preference
+        // Save user preference
+        localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
         
         // Show feedback
-        showFeedback(`${isDarkMode ? 'Dark' : 'Light'} mode enabled`);ToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
-    };);
+        showFeedback(`${isDarkMode ? 'Dark' : 'Light'} mode enabled`);
+    };
     
     // Add event listener for dark mode toggle
-    modeToggleBtn.addEventListener('click', toggleDarkMode);   modeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
-           themeColor.setAttribute('content', '#FF6F00');
-    // Listen for system preference changes     }
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {        }
+    modeToggleBtn.addEventListener('click', toggleDarkMode);
+    
+    // Listen for system preference changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
         if (!localStorage.getItem('theme')) { // Only auto-switch if user hasn't set preference
             if (e.matches) {
                 document.body.classList.add('dark-mode');
-                modeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';r('click', () => {
-                themeColor.setAttribute('content', '#121212'); currentDate.setDate(currentDate.getDate() - 1);
-            } else {        fetchComic(currentDate);
+                modeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+                themeColor.setAttribute('content', '#121212');
+            } else {
                 document.body.classList.remove('dark-mode');
                 modeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
-                themeColor.setAttribute('content', '#FF6F00');r('click', () => {
-            } currentDate.setDate(currentDate.getDate() + 1);
-        }        fetchComic(currentDate);
+                themeColor.setAttribute('content', '#FF6F00');
+            }
+        }
     });
 
-    // Event listenerser('click', () => {
-    prevComicBtn.addEventListener('click', () => { currentDate = new Date('1978-06-19');
-        currentDate.setDate(currentDate.getDate() - 1);        fetchComic(currentDate);
+    // Event listeners
+    prevComicBtn.addEventListener('click', () => {
+        currentDate.setDate(currentDate.getDate() - 1);
         fetchComic(currentDate);
     });
-ner('click', () => {
-    nextComicBtn.addEventListener('click', () => { currentDate = getRandomDate();
-        currentDate.setDate(currentDate.getDate() + 1);        fetchComic(currentDate);
+
+    nextComicBtn.addEventListener('click', () => {
+        currentDate.setDate(currentDate.getDate() + 1);
         fetchComic(currentDate);
     });
-omicBtn.addEventListener('click', async () => {
-    firstComicBtn.addEventListener('click', () => {Storage(currentDate); // Use yyyy-mm-dd format
+
+    firstComicBtn.addEventListener('click', () => {
         currentDate = new Date('1978-06-19');
         fetchComic(currentDate);
     });
 
-    randomComicBtn.addEventListener('click', () => {rited');
-        currentDate = getRandomDate();riteComicBtn.querySelector('i').style.color = '';
-        fetchComic(currentDate);ed from favorites');
+    randomComicBtn.addEventListener('click', () => {
+        currentDate = getRandomDate();
+        fetchComic(currentDate);
     });
 
-    favoriteComicBtn.addEventListener('click', async () => {sistent yyyy-mm-dd format
-        const formattedDate = formatDateForStorage(currentDate); // Use yyyy-mm-dd format  src: comicImg.src,
-        try {()
+    favoriteComicBtn.addEventListener('click', async () => {
+        const formattedDate = formatDateForStorage(currentDate); // Use yyyy-mm-dd format
+        try {
             if (favorites[formattedDate]) {
                 await api.removeFavorite(formattedDate);
                 delete favorites[formattedDate];
                 favoriteComicBtn.classList.remove('favorited');
-                favoriteComicBtn.querySelector('i').style.color = '';.style.color = getComputedStyle(document.documentElement)
-                showFeedback('Removed from favorites');       .getPropertyValue('--secondary-color').trim();
-            } else {ack('Added to favorites');
+                favoriteComicBtn.querySelector('i').style.color = '';
+                showFeedback('Removed from favorites');
+            } else {
                 const comicData = {
                     date: formattedDate, // Use consistent yyyy-mm-dd format
-                    src: comicImg.src,   console.error('Error updating favorite:', error);
-                    added: new Date().toISOString()     showFeedback('Failed to update favorites', true);
-                };        }
+                    src: comicImg.src,
+                    added: new Date().toISOString()
+                };
                 await api.addFavorite(comicData);
                 favorites[formattedDate] = comicData;
-                favoriteComicBtn.classList.add('favorited');ntListener('click', () => {
-                favoriteComicBtn.querySelector('i').style.color = getComputedStyle(document.documentElement) favoritesView.classList.add('show');
-                    .getPropertyValue('--secondary-color').trim();        displayFavorites();
+                favoriteComicBtn.classList.add('favorited');
+                favoriteComicBtn.querySelector('i').style.color = getComputedStyle(document.documentElement)
+                    .getPropertyValue('--secondary-color').trim();
                 showFeedback('Added to favorites');
             }
-        } catch (error) {seButton.addEventListener('click', () => {
-            console.error('Error updating favorite:', error);        favoritesView.classList.remove('show');
+        } catch (error) {
+            console.error('Error updating favorite:', error);
             showFeedback('Failed to update favorites', true);
         }
-    });Listener('click', async () => {
-        const comment = commentInput.value.trim();
+    });
+
     viewFavoritesBtn.addEventListener('click', () => {
         favoritesView.classList.add('show');
-        displayFavorites();, comment); // Debugging log
+        displayFavorites();
     });
 
     closeButton.addEventListener('click', () => {
-        favoritesView.classList.remove('show');te(currentDate), comment);
+        favoritesView.classList.remove('show');
     });
-ts(currentDate);
-    submitCommentBtn.addEventListener('click', async () => { // Debugging log
+
+    submitCommentBtn.addEventListener('click', async () => {
         const comment = commentInput.value.trim();
-        if (!comment) return;.error('Error adding comment:', error);
-t', true);
-        console.log('Submitting comment:', comment); finally {
-        console.log('Current date for comment:', formatDate(currentDate));     submitCommentBtn.disabled = false;
-        }
+        if (!comment) return;
+
+        console.log('Submitting comment:', comment);
+        console.log('Current date for comment:', formatDate(currentDate));
+
         submitCommentBtn.disabled = true;
         try {
-            await api.addComment(formatDate(currentDate), comment);er('keypress', (e) => {
-            commentInput.value = '';hiftKey) {
-            // Add a slight delay before refreshing comments   e.preventDefault();
-            setTimeout(() => {     submitCommentBtn.click();
-                displayComments(currentDate);        }
+            await api.addComment(formatDate(currentDate), comment);
+            commentInput.value = '';
+            // Add a slight delay before refreshing comments
+            setTimeout(() => {
+                displayComments(currentDate);
             }, 500);
             console.log('Comment submitted successfully');
-        } catch (error) {nges
-            console.error('Error adding comment:', error);Listener('change', () => {
-            showFeedback('Failed to add comment', true);comicDateInput.value);
+        } catch (error) {
+            console.error('Error adding comment:', error);
+            showFeedback('Failed to add comment', true);
         } finally {
-            submitCommentBtn.disabled = false;entDate = selectedDate;
-        }
-    }); else {
-     showFeedback('Please enter a valid date', true);
-    commentInput.addEventListener('keypress', (e) => {        }
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            submitCommentBtn.click();r
-        }er('click', () => {
-    }); currentDate = new Date();
-        fetchComic(currentDate);
-    // Date picker event listener - auto-select when date changes
-    comicDateInput.addEventListener('change', () => {
-        const selectedDate = parseDate(comicDateInput.value);upport
-        if (selectedDate) {    let touchStartX = 0;
-            currentDate = selectedDate;
-            fetchComic(currentDate);
-        } else {nst handleTouchStart = (e) => {
-            showFeedback('Please enter a valid date', true);        touchStartX = e.touches[0].clientX;
+            submitCommentBtn.disabled = false;
         }
     });
-nst handleTouchMove = (e) => {
-    // Today button event listener        touchEndX = e.touches[0].clientX;
+
+    commentInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            submitCommentBtn.click();
+        }
+    });
+
+    // Date picker event listener - auto-select when date changes
+    comicDateInput.addEventListener('change', () => {
+        const selectedDate = parseDate(comicDateInput.value);
+        if (selectedDate) {
+            currentDate = selectedDate;
+            fetchComic(currentDate);
+        } else {
+            showFeedback('Please enter a valid date', true);
+        }
+    });
+
+    // Today button event listener
     todayComicBtn.addEventListener('click', () => {
         currentDate = new Date();
         fetchComic(currentDate);
-    });const touchDiff = touchStartX - touchEndX;
-imum distance to trigger swipe
+    });
+
     // Touch gesture support
     let touchStartX = 0;
-    let touchEndX = 0;c
-tDate() + 1);
+    let touchEndX = 0;
+
     const handleTouchStart = (e) => {
         touchStartX = e.touches[0].clientX;
-    }; comic
-   currentDate.setDate(currentDate.getDate() - 1);
-    const handleTouchMove = (e) => {      fetchComic(currentDate);
-        touchEndX = e.touches[0].clientX;        }
+    };
+
+    const handleTouchMove = (e) => {
+        touchEndX = e.touches[0].clientX;
     };
 
     const handleTouchEnd = () => {
-        const touchDiff = touchStartX - touchEndX;se);
-        const sensitivity = 50; // Minimum distance to trigger swipe    comicImg.addEventListener('touchmove', handleTouchMove, false);
-        Listener('touchend', handleTouchEnd, false);
+        const touchDiff = touchStartX - touchEndX;
+        const sensitivity = 50; // Minimum distance to trigger swipe
+
         if (touchDiff > sensitivity) {
-            // Swipe left: next comicp
+            // Swipe left: next comic
             currentDate.setDate(currentDate.getDate() + 1);
-            fetchComic(currentDate); loadFavorites();
-        } else if (touchDiff < -sensitivity) {    fetchComic(currentDate);
+            fetchComic(currentDate);
+        } else if (touchDiff < -sensitivity) {
+            // Swipe right: previous comic
+            currentDate.setDate(currentDate.getDate() - 1);
+            fetchComic(currentDate);
+        }
+    };
 
+    comicImg.addEventListener('touchstart', handleTouchStart, false);
+    comicImg.addEventListener('touchmove', handleTouchMove, false);
+    comicImg.addEventListener('touchend', handleTouchEnd, false);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-});    fetchComic(currentDate);    loadFavorites();    initTheme();    // Initialize app    comicImg.addEventListener('touchend', handleTouchEnd, false);    comicImg.addEventListener('touchmove', handleTouchMove, false);    comicImg.addEventListener('touchstart', handleTouchStart, false);    // Add touch event listeners to the comic container    };        }            fetchComic(currentDate);            currentDate.setDate(currentDate.getDate() - 1);            // Swipe right: previous comic});
+    // Initialize app
+    initTheme();
+    loadFavorites();
+    fetchComic(currentDate);
+});
