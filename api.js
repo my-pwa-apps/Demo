@@ -80,20 +80,31 @@ class ComicsAPI {
         };
     }
 
+    // Optimized favorites methods with error handling
     async getFavorites() {
-        const snapshot = await this.db.ref(`favorites/${this.userId}`).once('value');
-        return snapshot.val() || {};
+        try {
+            const snapshot = await this.db.ref(`favorites/${this.userId}`).once('value');
+            return snapshot.val() || {};
+        } catch (error) {
+            console.error('Error fetching favorites:', error);
+            return {}; // Return empty object on error
+        }
     }
 
     async addFavorite(comicData) {
-        const formattedDate = comicData.date;
-        const favRef = this.db.ref(`favorites/${this.userId}/${formattedDate}`);
-        await favRef.set({
-            date: comicData.date,
-            src: comicData.src,
-            added: new Date().toISOString()
-        });
-        return comicData;
+        try {
+            const formattedDate = comicData.date;
+            const favRef = this.db.ref(`favorites/${this.userId}/${formattedDate}`);
+            await favRef.set({
+                date: comicData.date,
+                src: comicData.src,
+                added: new Date().toISOString()
+            });
+            return comicData;
+        } catch (error) {
+            console.error('Error adding favorite:', error);
+            throw error;
+        }
     }
 
     async removeFavorite(comicDate) {
@@ -106,54 +117,55 @@ class ComicsAPI {
         }
     }
 
+    // Improved comments methods
     async getComments(comicDate) {
         console.log('Fetching comments for date:', comicDate);
-        const snapshot = await this.db.ref(`comments/${comicDate}`).once('value');
-        const commentsObj = snapshot.val() || {};
-        console.log('Raw comments data:', commentsObj);
-        
-        // Convert object to array
-        const commentsArray = Object.entries(commentsObj).map(([id, comment]) => ({
-            id,
-            ...comment
-        }));
-        
-        console.log('Processed comments array:', commentsArray);
-        return commentsArray;
+        try {
+            const snapshot = await this.db.ref(`comments/${comicDate}`).once('value');
+            const commentsObj = snapshot.val() || {};
+            
+            // Convert object to array
+            const commentsArray = Object.entries(commentsObj).map(([id, comment]) => ({
+                id,
+                ...comment
+            }));
+            
+            return commentsArray;
+        } catch (error) {
+            console.error('Error fetching comments:', error);
+            return []; // Return empty array on error
+        }
     }
 
     async addComment(comicDate, commentText) {
-        console.log('Adding comment for date:', comicDate, 'Text:', commentText);
+        if (!commentText.trim()) {
+            throw new Error('Comment cannot be empty');
+        }
+        
         const newComment = {
             username: this.username,
-            text: commentText,
-            timestamp: firebase.database.ServerValue.TIMESTAMP // Use server timestamp
+            text: commentText.trim(),
+            timestamp: firebase.database.ServerValue.TIMESTAMP
         };
-        console.log('New comment object:', newComment);
         
-        const commentsRef = this.db.ref(`comments/${comicDate}`);
-        const newCommentRef = commentsRef.push(); // Generate unique key
-        
-        console.log('Comment will be saved at path:', `comments/${comicDate}/${newCommentRef.key}`);
-        await newCommentRef.set(newComment);
-        
-        console.log('Comment added successfully with key:', newCommentRef.key);
-        return newComment;
+        try {
+            const commentsRef = this.db.ref(`comments/${comicDate}`);
+            const newCommentRef = commentsRef.push(); 
+            await newCommentRef.set(newComment);
+            return newComment;
+        } catch (error) {
+            console.error('Error adding comment:', error);
+            throw error;
+        }
     }
 
     async deleteComment(comicDate, commentId) {
-        console.log('Deleting comment:', commentId, 'from date:', comicDate);
         try {
             await this.db.ref(`comments/${comicDate}/${commentId}`).remove();
-            console.log('Comment deleted successfully');
             return true;
         } catch (error) {
             console.error('Error deleting comment:', error);
             throw error;
         }
-    }
-
-    async cleanupFavorites() {
-        return {};
     }
 }

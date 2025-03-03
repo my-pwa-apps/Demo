@@ -136,6 +136,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Define comic date boundaries at the top of the file
+    const FIRST_COMIC_DATE = new Date('1978-06-19');
+    const LAST_COMIC_DATE = new Date(); // Today
+
+    // Add helper function to check if a date is within valid comic range
+    const isValidComicDate = (date) => {
+        return date >= FIRST_COMIC_DATE && date <= LAST_COMIC_DATE;
+    };
+
     // Simplified comic loading with multiple proxy options
     const fetchComic = async (date) => {
         try {
@@ -143,6 +152,18 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!(date instanceof Date)) {
                 date = parseDate(date) || new Date();
             }
+            
+            // Check date bounds and adjust if necessary
+            if (date < FIRST_COMIC_DATE) {
+                date = new Date(FIRST_COMIC_DATE);
+                showFeedback("This is the first Garfield comic");
+            } else if (date > LAST_COMIC_DATE) {
+                date = new Date(LAST_COMIC_DATE);
+                showFeedback("No future comics available");
+            }
+            
+            // Update currentDate to respect boundaries
+            currentDate = date;
             
             const formattedDate = formatDate(date);
             const storageDate = formatDateForStorage(date);
@@ -390,76 +411,73 @@ document.addEventListener('DOMContentLoaded', () => {
                 const fragment = document.createDocumentFragment();
                 
                 if (!comments || comments.length === 0) {
+                    // Don't show "No comments yet" message - leave it empty
                     console.log('No comments to display');
-                    const noComments = document.createElement('div');
-                    noComments.className = 'comment';
-                    noComments.innerHTML = '<em>No comments yet.</em>';
-                    fragment.appendChild(noComments);
-                } else {
-                    // Limit to most recent 10 comments to keep display compact
-                    const recentComments = Array.isArray(comments) ? comments.slice(-10) : [];
-                    console.log('Recent comments to display:', recentComments);
+                    // Empty the comments list without adding a placeholder
+                    commentsList.innerHTML = '';
+                    return;
+                }
+                
+                // Limit to most recent 10 comments to keep display compact
+                const recentComments = Array.isArray(comments) ? comments.slice(-10) : [];
+                console.log('Recent comments to display:', recentComments);
+                
+                recentComments.forEach(comment => {
+                    console.log('Processing comment:', comment);
+                    const commentElement = document.createElement('div');
+                    commentElement.classList.add('comment');
                     
-                    recentComments.forEach(comment => {
-                        console.log('Processing comment:', comment);
-                        const commentElement = document.createElement('div');
-                        commentElement.classList.add('comment');
-                        
-                        // Format date in a more compact way with time
-                        let dateStr = 'Unknown date';
-                        try {
-                            if (comment.timestamp) {
-                                const commentDate = new Date(comment.timestamp);
-                                dateStr = commentDate.toLocaleDateString(undefined, {
-                                    month: 'short', 
-                                    day: 'numeric'
-                                }) + ' ' + commentDate.toLocaleTimeString(undefined, {
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                });
-                            }
-                        } catch (e) {
-                            console.error('Error formatting comment date:', e);
-                        }
-                        
-                        // Check if this comment belongs to the current user
-                        const isCurrentUserComment = comment.username === api.username;
-                        
-                        commentElement.innerHTML = `
-                            <div class="comment-header">
-                                <span class="comment-user">${comment.username || 'Anonymous'}</span>
-                                <span class="comment-date">${dateStr}</span>
-                                ${isCurrentUserComment ? '<button class="delete-comment-btn" title="Delete comment"><i class="fas fa-trash"></i></button>' : ''}
-                            </div>
-                            <div class="comment-text">${comment.text}</div>
-                        `;
-                        
-                        // Add event listener for delete button if this is user's comment
-                        if (isCurrentUserComment) {
-                            const deleteBtn = commentElement.querySelector('.delete-comment-btn');
-                            deleteBtn.addEventListener('click', async () => {
-                                try {
-                                    await api.deleteComment(formattedDate, comment.id);
-                                    commentElement.remove();
-                                    showFeedback('Comment deleted');
-                                    
-                                    // If there are no more comments, show "No comments yet" message
-                                    if (commentsList.children.length === 0) {
-                                        const noComments = document.createElement('div');
-                                        noComments.className = 'comment';
-                                        noComments.innerHTML = '<em>No comments yet.</em>';
-                                        commentsList.appendChild(noComments);
-                                    }
-                                } catch (error) {
-                                    console.error('Error deleting comment:', error);
-                                    showFeedback('Failed to delete comment', true);
-                                }
+                    // Format date in a more compact way with time
+                    let dateStr = 'Unknown date';
+                    try {
+                        if (comment.timestamp) {
+                            const commentDate = new Date(comment.timestamp);
+                            dateStr = commentDate.toLocaleDateString(undefined, {
+                                month: 'short', 
+                                day: 'numeric'
+                            }) + ' ' + commentDate.toLocaleTimeString(undefined, {
+                                hour: '2-digit',
+                                minute: '2-digit'
                             });
                         }
-                        
-                        fragment.appendChild(commentElement);
-                    });
-                }
+                    } catch (e) {
+                        console.error('Error formatting comment date:', e);
+                    }
+                    
+                    // Check if this comment belongs to the current user
+                    const isCurrentUserComment = comment.username === api.username;
+                    
+                    commentElement.innerHTML = `
+                        <div class="comment-header">
+                            <span class="comment-user">${comment.username || 'Anonymous'}</span>
+                            <span class="comment-date">${dateStr}</span>
+                            ${isCurrentUserComment ? '<button class="delete-comment-btn" title="Delete comment"><i class="fas fa-trash"></i></button>' : ''}
+                        </div>
+                        <div class="comment-text">${comment.text}</div>
+                    `;
+                    
+                    // Add event listener for delete button if this is user's comment
+                    if (isCurrentUserComment) {
+                        const deleteBtn = commentElement.querySelector('.delete-comment-btn');
+                        deleteBtn.addEventListener('click', async () => {
+                            try {
+                                await api.deleteComment(formattedDate, comment.id);
+                                commentElement.remove();
+                                showFeedback('Comment deleted');
+                                
+                                // If there are no more comments, just leave it empty
+                                if (commentsList.children.length === 0) {
+                                    // Don't add any placeholder
+                                }
+                            } catch (error) {
+                                console.error('Error deleting comment:', error);
+                                showFeedback('Failed to delete comment', true);
+                            }
+                        });
+                    }
+                    
+                    fragment.appendChild(commentElement);
+                });
                 
                 // Update comments list in one go
                 commentsList.innerHTML = '';
@@ -470,7 +488,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 commentsList.scrollTop = commentsList.scrollHeight;
             } catch (error) {
                 console.error('Error loading comments:', error);
-                commentsList.innerHTML = '<div class="comment"><em>Unable to load comments</em></div>';
+                // Don't show "Unable to load comments" - just leave it empty
+                commentsList.innerHTML = '';
             }
         }, 200); // 200ms debounce
     };
@@ -645,11 +664,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Random date generation
     const getRandomDate = () => {
-        const startDate = new Date('1978-06-19');
-        const endDate = new Date();
-        const randomTime = startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime());
-        const randomDate = new Date(randomTime);
-        return new Date(randomDate.getFullYear(), randomDate.getMonth(), randomDate.getDate());
+        const startDate = new Date('1978-06-19').getTime();
+        const endDate = new Date().getTime();
+        return new Date(startDate + Math.random() * (endDate - startDate));
     };
 
     // Notification handler
@@ -862,17 +879,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event listeners
     prevComicBtn.addEventListener('click', () => {
-        currentDate.setDate(currentDate.getDate() - 1);
-        fetchComic(currentDate);
+        const prevDate = new Date(currentDate);
+        prevDate.setDate(prevDate.getDate() - 1);
+        
+        // Check if the previous date is still valid
+        if (prevDate >= FIRST_COMIC_DATE) {
+            currentDate = prevDate;
+            fetchComic(currentDate);
+        } else {
+            showFeedback("You've reached the first Garfield comic");
+        }
     });
 
     nextComicBtn.addEventListener('click', () => {
-        currentDate.setDate(currentDate.getDate() + 1);
-        fetchComic(currentDate);
+        const nextDate = new Date(currentDate);
+        nextDate.setDate(nextDate.getDate() + 1);
+        
+        // Check if the next date is still valid
+        if (nextDate <= LAST_COMIC_DATE) {
+            currentDate = nextDate;
+            fetchComic(currentDate);
+        } else {
+            showFeedback("No future comics available");
+        }
     });
 
     firstComicBtn.addEventListener('click', () => {
-        currentDate = new Date('1978-06-19');
+        currentDate = new Date(FIRST_COMIC_DATE);
         fetchComic(currentDate);
     });
 
@@ -953,8 +986,17 @@ document.addEventListener('DOMContentLoaded', () => {
     comicDateInput.addEventListener('change', () => {
         const selectedDate = parseDate(comicDateInput.value);
         if (selectedDate) {
-            currentDate = selectedDate;
-            fetchComic(currentDate);
+            // Check if selected date is within valid range
+            if (isValidComicDate(selectedDate)) {
+                currentDate = selectedDate;
+                fetchComic(currentDate);
+            } else if (selectedDate < FIRST_COMIC_DATE) {
+                showFeedback("Comics start from June 19, 1978", true);
+                comicDateInput.value = formatDateForStorage(FIRST_COMIC_DATE);
+            } else {
+                showFeedback("Cannot select future dates", true);
+                comicDateInput.value = formatDateForStorage(LAST_COMIC_DATE);
+            }
         } else {
             showFeedback('Please enter a valid date', true);
         }
@@ -984,12 +1026,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (touchDiff > sensitivity) {
             // Swipe left: next comic
-            currentDate.setDate(currentDate.getDate() + 1);
-            fetchComic(currentDate);
+            const nextDate = new Date(currentDate);
+            nextDate.setDate(nextDate.getDate() + 1);
+            
+            if (nextDate <= LAST_COMIC_DATE) {
+                currentDate = nextDate;
+                fetchComic(currentDate);
+            } else {
+                showFeedback("No future comics available");
+            }
         } else if (touchDiff < -sensitivity) {
             // Swipe right: previous comic
-            currentDate.setDate(currentDate.getDate() - 1);
-            fetchComic(currentDate);
+            const prevDate = new Date(currentDate);
+            prevDate.setDate(prevDate.getDate() - 1);
+            
+            if (prevDate >= FIRST_COMIC_DATE) {
+                currentDate = prevDate;
+                fetchComic(currentDate);
+            } else {
+                showFeedback("You've reached the first Garfield comic");
+            }
         }
     };
 
@@ -1038,16 +1094,16 @@ document.addEventListener('DOMContentLoaded', () => {
             // Show Android-specific install button
             androidInstallBtn.style.display = 'flex';
             
-            // On Android, also show an installation tip after a short delay, but smaller
+            // Smaller, more discreet notification
             setTimeout(() => {
-                showFeedback('Tap to install app', false, 3000);
-            }, 3000);
+                showFeedback('Install app', false, 2000);
+            }, 2000);
         } else if (deferredPrompt) {
             // Show the install banner for other platforms
             installBanner.style.display = 'block';
             
-            // Also show a temporary notification
-            showFeedback('Install this app for offline use!', false, 3000);
+            // Smaller notification
+            showFeedback('Install for offline use', false, 2000);
         }
     };
 
