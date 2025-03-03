@@ -58,8 +58,8 @@ self.addEventListener('fetch', event => {
                     // If not in cache, get from network
                     return fetch(event.request)
                         .then(networkResponse => {
-                            // Don't cache if response is not ok
-                            if (!networkResponse || !networkResponse.ok) {
+                            // Don't cache if response is not ok or if request method is not GET
+                            if (!networkResponse || !networkResponse.ok || event.request.method !== 'GET') {
                                 return networkResponse;
                             }
                             
@@ -85,8 +85,8 @@ self.addEventListener('fetch', event => {
                     }
                     return fetch(event.request)
                         .then(response => {
-                            // Cache successful responses except for API calls
-                            if (response && response.ok && !url.href.includes('api.')) {
+                            // Cache successful responses except for API calls and non-GET requests
+                            if (response && response.ok && !url.href.includes('api.') && event.request.method === 'GET') {
                                 const responseToCache = response.clone();
                                 caches.open(CACHE_NAME)
                                     .then(cache => {
