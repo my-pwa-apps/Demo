@@ -45,7 +45,13 @@ class ComicsAPI {
 
     async getComments(comicDate) {
         const snapshot = await this.db.ref(`comments/${comicDate}`).once('value');
-        return snapshot.val() || [];
+        const commentsObj = snapshot.val() || {};
+        
+        // Convert object to array
+        return Object.entries(commentsObj).map(([id, comment]) => ({
+            id,
+            ...comment
+        }));
     }
 
     async addComment(comicDate, commentText) {
