@@ -168,6 +168,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // List of CORS proxies to try in order
                 const proxyServices = [
+                    // Add your custom proxy as the first option to try
+                    url => `https://corsproxy.garfieldapp.workers.dev/cors-proxy?${encodeURIComponent(url)}`,
                     url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
                     url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
                     url => `https://cors-anywhere.herokuapp.com/${url}`,
@@ -350,22 +352,21 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Use separate fetch to avoid interfering with main comic loading
         const comicUrl = `https://www.gocomics.com/garfield/${formattedDate}`;
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(comicUrl)}`;
+        // Use your new proxy for preloading too
+        const proxyUrl = `https://corsproxy.garfieldapp.workers.dev/cors-proxy?${encodeURIComponent(comicUrl)}`;
         
         fetch(proxyUrl)
-            .then(response => response.json())
-            .then(data => {
-                if (data.contents) {
-                    const comicSrc = extractComicImage(data.contents);
-                    if (comicSrc) {
-                        // Just store in memory cache
-                        if (!window.comicCache) window.comicCache = {};
-                        window.comicCache[formattedDate] = { src: comicSrc };
-                        
-                        // Preload image into browser cache
-                        const img = new Image();
-                        img.src = comicSrc;
-                    }
+            .then(response => response.text())  // Your proxy likely returns direct HTML
+            .then(html => {
+                const comicSrc = extractComicImage(html);
+                if (comicSrc) {
+                    // Just store in memory cache
+                    if (!window.comicCache) window.comicCache = {};
+                    window.comicCache[formattedDate] = { src: comicSrc };
+                    
+                    // Preload image into browser cache
+                    const img = new Image();
+                    img.src = comicSrc;
                 }
             })
             .catch(error => {
@@ -692,14 +693,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const today = new Date();
         const formattedDate = formatDate(today);
         const comicUrl = `https://www.gocomics.com/garfield/${formattedDate}`;
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(comicUrl)}`;
+        const proxyUrl = `https://corsproxy.garfieldapp.workers.dev/cors-proxy?${encodeURIComponent(comicUrl)}`;
         
         fetch(proxyUrl)
-            .then(response => response.json())
-            .then(data => {
+            .then(response => response.text())
+            .then(html => {
                 const parser = new DOMParser();
-                const doc = parser.parseFromString(data.contents, 'text/html');
-                const comicSrc = doc.querySelector('.item-comic-image img')?.src;
+                const doc = parser.parseFromString(html, 'text/html');
+                const comicSrc = extractComicImage(doc);
                 if (comicSrc) {
                     showNotification('New Garfield Comic Available!', 'Click to view the latest comic', comicSrc);
                 }
