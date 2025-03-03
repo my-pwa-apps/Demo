@@ -101,12 +101,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const showLoadingIndicator = () => {
         comicImg.style.opacity = '0.3';
-        comicImg.parentElement.classList.add('loading');
+        comicImg.classList.add('loading');
     };
 
     const hideLoadingIndicator = () => {
         comicImg.style.opacity = '1';
-        comicImg.parentElement.classList.remove('loading');
+        comicImg.classList.remove('loading');
     };
 
     const showFeedback = (message, isError = false) => {
