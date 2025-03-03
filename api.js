@@ -44,27 +44,37 @@ class ComicsAPI {
     }
 
     async getComments(comicDate) {
+        console.log('Fetching comments for date:', comicDate);
         const snapshot = await this.db.ref(`comments/${comicDate}`).once('value');
         const commentsObj = snapshot.val() || {};
+        console.log('Raw comments data:', commentsObj);
         
         // Convert object to array
-        return Object.entries(commentsObj).map(([id, comment]) => ({
+        const commentsArray = Object.entries(commentsObj).map(([id, comment]) => ({
             id,
             ...comment
         }));
+        
+        console.log('Processed comments array:', commentsArray);
+        return commentsArray;
     }
 
     async addComment(comicDate, commentText) {
-        console.log('Adding comment:', commentText); // Debugging log
+        console.log('Adding comment for date:', comicDate, 'Text:', commentText);
         const newComment = {
             username: this.username,
             text: commentText,
             timestamp: firebase.database.ServerValue.TIMESTAMP // Use server timestamp
         };
+        console.log('New comment object:', newComment);
+        
         const commentsRef = this.db.ref(`comments/${comicDate}`);
         const newCommentRef = commentsRef.push(); // Generate unique key
+        
+        console.log('Comment will be saved at path:', `comments/${comicDate}/${newCommentRef.key}`);
         await newCommentRef.set(newComment);
-        console.log('Comment added:', newComment); // Debugging log
+        
+        console.log('Comment added successfully with key:', newCommentRef.key);
         return newComment;
     }
 
