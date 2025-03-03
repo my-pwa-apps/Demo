@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garfield Comics</title>
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#FF6F00" id="theme-color">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <!-- Remove Supabase -->
+    <!-- <script src="https://unpkg.com/@supabase/supabase-js@2"></script> -->
+    
+    <!-- Remove Firebase -->
+    <!-- <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script> -->
+</head>
+<body>
+    <header class="header">
+        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/b/bc/Garfield_the_Cat.svg/1200px-Garfield_the_Cat.svg.png" alt="Garfield Logo" class="logo">
+    </header>
+    
+    <button id="mode-toggle" class="mode-toggle" aria-label="Toggle dark mode">
+        <i class="fas fa-moon"></i>
+    </button>
+    
+    <main class="main-content">
+        <div class="comic-container">
+            <div class="comic-display">
+                <img id="comic-img" src="" alt="Garfield Comic">
+            </div>
+        </div>
+        <div class="comic-controls">
+            <div class="comic-selector">
+                <input type="date" id="comic-date" class="date-picker">
+            </div>
+        </div>
+        <div class="favorites-section" id="favorites-section">
+            <div id="favorites-list" class="favorites-grid"></div>
+        </div>
+        <div class="comments-section">
+            <h2>Comments</h2>
+            <div id="comments-list"></div>
+            <textarea id="comment-input" placeholder="Add a comment..." rows="2"></textarea>
+            <button id="submit-comment" class="btn">Post</button>
+        </div>
+    </main>
+    <nav class="bottom-nav">
+        <button id="prev-comic" class="nav-button"><i class="fas fa-arrow-left"></i></button>
+        <button id="first-comic" class="nav-button"><i class="fas fa-backward"></i></button>
+        <button id="random-comic" class="nav-button"><i class="fas fa-dice"></i></button>
+        <button id="today-comic" class="nav-button"><i class="fas fa-calendar-day"></i></button>
+        <button id="favorite-comic" class="nav-button"><i class="fas fa-star"></i></button>
+        <button id="view-favorites" class="nav-button"><i class="fas fa-bookmark"></i></button>
+        <button id="next-comic" class="nav-button"><i class="fas fa-arrow-right"></i></button>
+    </nav>
+    <script src="api.js"></script>
+    <script src="main.js"></script>
+    <script src="service-worker.js"></script>
+</body>
+</html>

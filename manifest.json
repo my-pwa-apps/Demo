@@ -1,0 +1,21 @@
+{
+    "name": "Garfield Comics",
+    "short_name": "Garfield",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#FF6F00",
+    "theme_color": "#FF6F00",
+    "description": "Read and enjoy Garfield comics.",
+    "icons": [
+        {
+            "src": "https://upload.wikimedia.org/wikipedia/en/thumb/b/bc/Garfield_the_Cat.svg/1200px-Garfield_the_Cat.svg.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "https://upload.wikimedia.org/wikipedia/en/thumb/b/bc/Garfield_the_Cat.svg/1200px-Garfield_the_Cat.svg.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

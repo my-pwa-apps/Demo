@@ -1,0 +1,656 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* Base Styles */
+:root {
+    /* Light Mode Colors (Default) */
+    --primary-color: #FF6F00; /* Garfield Orange */
+    --secondary-color: #FFD700; /* Garfield Yellow */
+    --accent-color: #4B0082; /* Garfield Purple */
+    --text-color: #333333;
+    --background-color: #FFFFFF;
+    --background-gradient: linear-gradient(135deg, #FF6F00, #FFD700); 
+    --card-bg: rgba(255, 255, 255, 0.92);
+    --comment-bg: rgba(255, 255, 255, 0.85);
+    --comment-text: #333333;
+    --shadow-color: rgba(0, 0, 0, 0.12);
+    --input-bg: #FFFFFF;
+    --input-border: #ccc;
+    --button-text: #ffffff;
+    --comic-border: transparent; /* Transparent border for light mode */
+    --bottom-nav-bg: var(--primary-color); /* Bottom nav uses primary color in light mode */
+}
+
+/* Dark Mode Colors - Updated with Garfield-themed gradient */
+.dark-mode {
+    --primary-color: #FF8F30; /* Brighter Orange for dark mode */
+    --secondary-color: #FFEB3B; /* Brighter Yellow for dark mode */
+    --accent-color: #9C27B0; /* Brighter Purple for dark mode */
+    --text-color: #E0E0E0;
+    --background-color: #121212;
+    --background-gradient: linear-gradient(135deg, #5D1D00, #3A1600, #222222); /* Dark orange to dark grey gradient */
+    --card-bg: rgba(40, 40, 40, 0.9); /* Darker, more opaque card background */
+    --comment-bg: rgba(50, 50, 50, 0.9);
+    --comment-text: #E0E0E0;
+    --shadow-color: rgba(0, 0, 0, 0.5); /* Stronger shadows for dark mode */
+    --input-bg: #2D2D2D;
+    --input-border: #555555;
+    --button-text: #E0E0E0;
+    --comic-border: #555555; /* New variable for comic border */
+    --bottom-nav-bg: #2A1000; /* Darker bottom nav for dark mode */
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--background-gradient);
+    color: var(--text-color);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 20px 70px 20px;
+    margin: 0;
+}
+
+/* Header & Logo */
+.header {
+    background: none;
+    width: 100%;
+    text-align: center;
+    padding: 10px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header .logo {
+    height: 90px; /* Increased from 70px for a bigger logo */
+    width: auto;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+    transition: all 0.3s ease;
+}
+
+/* Layout Components */
+.main-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 5px 0; /* Reduced padding */
+}
+
+/* Enhanced comic container styling */
+.comic-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 98vw; /* Wider container using viewport width */
+    margin: 0 auto;
+    padding: 0;
+    box-shadow: 0 2px 6px var(--shadow-color);
+    border-radius: 4px; /* Smaller border radius */
+    background-color: var(--card-bg);
+    overflow: hidden;
+    border: 1px solid var(--comic-border); /* Add border that changes with theme */
+}
+
+/* Dark mode specific comic container enhancements */
+.dark-mode .comic-container {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Stronger shadow in dark mode */
+    border: 1px solid var(--comic-border);
+    position: relative;
+}
+
+/* Comic Display */
+.comic-display {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin: 0;
+    padding: 4px; /* Minimal padding */
+    position: relative;
+    background-color: transparent; /* Remove background */
+    border-radius: 0; /* No border radius */
+    box-shadow: none;
+}
+
+/* Optional: Add subtle glow around comics in dark mode */
+.dark-mode .comic-display {
+    box-shadow: 0 0 20px rgba(255, 143, 48, 0.1); /* Very subtle orange glow */
+}
+
+.dark-mode .comic-display img {
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3); /* Stronger shadow on images in dark mode */
+}
+
+.comic-display.loading::after {
+    content: 'Loading...';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+}
+
+.comic-display img {
+    width: auto; /* Let the image size naturally */
+    max-width: 100%; /* But don't overflow container */
+    height: auto;
+    object-fit: contain;
+    max-height: 85vh; /* Slightly increased max height */
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12); /* Subtle shadow on image only */
+    border-radius: 2px; /* Minimal border radius */
+    transition: opacity 0.5s ease, box-shadow 0.3s ease;
+}
+
+/* Pixelated dissolve effect */
+.comic-display img.pixelated {
+    animation: pixelatedDissolve 0.7s forwards;
+}
+
+@keyframes pixelatedDissolve {
+    0% {
+        opacity: 1;
+        filter: blur(0px);
+    }
+    50% {
+        opacity: 0.5;
+        filter: blur(5px);
+    }
+    100% {
+        opacity: 0;
+        filter: blur(10px);
+    }
+}
+
+/* Navigation Controls - Smaller Date Control */
+.comic-controls {
+    padding: 6px 8px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border-radius: 4px;
+    margin: 8px 0;
+    width: auto;
+    display: inline-block;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.comic-selector {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.date-picker {
+    padding: 6px 8px;
+    border: none;
+    border-radius: 3px;
+    font-size: 0.9rem;
+    width: 130px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    border-color: var(--input-border);
+}
+
+.date-picker:hover, .date-picker:focus {
+    box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+    background-color: white;
+    outline: none;
+}
+
+.date-display {
+    display: none;
+}
+
+/* Button Styles */
+.btn {
+    background-color: var(--primary-color);
+    color: var(--button-text);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    min-width: 40px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+/* Button enhancement for dark mode */
+.dark-mode .btn {
+    background-color: var(--primary-color);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4); /* Stronger button shadow */
+}
+
+.btn:hover {
+    background-color: var(--secondary-color);
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.nav-button {
+    background: none;
+    border: none;
+    color: var(--button-text);
+    font-size: 1.5rem;
+    padding: 10px;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    margin: 0 5px;
+}
+
+.nav-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-button:active {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(0.95);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.nav-button i {
+    transition: all 0.3s ease;
+}
+
+.nav-button:hover i {
+    transform: scale(1.1);
+}
+
+.nav-button.favorited i {
+    color: var(--secondary-color);
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+/* Add highlight for today button when viewing today's comic */
+.nav-button.current-day i {
+    color: var(--secondary-color);
+}
+
+/* Bottom Navigation - Updated to use the variable */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-around;
+    background: var(--bottom-nav-bg);
+    padding: 8px 5px;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.15);
+    z-index: 90;
+}
+
+/* Enhanced bottom nav for dark mode */
+.dark-mode .bottom-nav {
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.5);
+    border-top: 1px solid rgba(255, 143, 48, 0.2); /* Subtle orange top border */
+}
+
+/* Comments Section - Streamlined */
+.comments-section {
+    width: 100%;
+    max-width: 600px;
+    margin-top: 15px;
+    margin-bottom: 60px;
+    padding: 10px;
+    box-shadow: 0 2px 6px var(--shadow-color);
+    border-radius: 6px;
+    background: var(--comment-bg);
+    overflow: hidden;
+    border-left: 2px solid var(--primary-color);
+    color: var(--text-color);
+}
+
+.comments-section h2 {
+    margin-bottom: 8px;
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #eee;
+}
+
+#comments-list {
+    max-height: 150px; /* Reduced height */
+    overflow-y: auto;
+    margin-bottom: 8px;
+}
+
+/* Better contrast for comments in dark mode */
+.dark-mode .comment {
+    background: rgba(60, 60, 60, 0.5); /* Slightly lighter than background */
+    border-left: 2px solid var(--primary-color);
+    margin-bottom: 8px;
+}
+
+.comment {
+    background: transparent;
+    padding: 6px 8px;
+    border-radius: 3px;
+    margin-bottom: 6px;
+    box-shadow: none;
+    border-left: 1px solid var(--primary-color);
+    position: relative;
+    transition: none; /* Removed transition */
+}
+
+.comment:hover {
+    transform: none; /* Removed hover effect */
+    box-shadow: none;
+}
+
+/* Comments Header with Username - Simplified */
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 3px;
+    font-size: 0.85rem;
+}
+
+.comment-user {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.comment-date {
+    font-size: 0.75rem;
+    color: #777;
+}
+
+#comment-input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    margin-bottom: 8px;
+    box-shadow: none;
+    font-size: 0.9rem;
+    min-height: 60px; /* Set fixed height */
+    resize: none; /* Prevent resizing */
+    background-color: var(--input-bg);
+    color: var(--text-color);
+}
+
+#comment-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(255, 111, 0, 0.1);
+    outline: none;
+}
+
+/* Submit button takes less space */
+.comments-section .btn {
+    padding: 6px 12px;
+    font-size: 0.9rem;
+}
+
+.comment-submit-feedback {
+    bottom: 65px; /* Move up to avoid bottom nav */
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Favorites Section & Cards */
+.favorites-view {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--background-gradient);
+    z-index: 1000;
+    padding: 20px;
+    overflow-y: auto;
+    display: none;
+}
+
+.favorites-view.show {
+    display: block;
+}
+
+/* Fixed favorites action buttons - remove cleanup button styles */
+.favorites-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1001;
+}
+
+/* Remove the cleanup-favorites button styling */
+
+.close-favorites {
+    background: var(--primary-color);
+    color: var(--button-text);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    transition: background-color 0.2s, transform 0.2s;
+    box-shadow: 0 3px 10px var(--shadow-color);
+}
+
+.close-favorites:hover {
+    background-color: var(--secondary-color);
+    transform: scale(1.1);
+}
+
+/* Adjust favorites grid and card styling */
+.favorites-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    padding: 5px;
+}
+
+.favorite-card {
+    background: var(--card-bg);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px var(--shadow-color);
+    cursor: pointer;
+    transition: transform 0.2s;
+    position: relative; /* For positioning the delete button */
+    border: 1px solid transparent;
+    color: var(--text-color);
+}
+
+.favorite-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+    border-color: var(--secondary-color);
+}
+
+.favorite-card img {
+    width: 100%;
+    height: 100px; /* Smaller height */
+    object-fit: cover;
+}
+
+/* Invalid favorite styling */
+.favorite-card.invalid-date {
+    opacity: 0.7;
+    border: 1px dashed red;
+}
+
+.favorite-card.invalid-date img {
+    filter: grayscale(50%);
+}
+
+.favorite-card.invalid-date .favorite-date {
+    color: red;
+}
+
+.favorite-info {
+    padding: 8px;
+}
+
+.favorite-date {
+    font-weight: bold;
+    color: var(--primary-color);
+    font-size: 0.9rem; /* Smaller font */
+}
+
+/* Favorite action buttons */
+.favorite-actions {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.favorite-card:hover .favorite-actions {
+    opacity: 1;
+}
+
+.remove-favorite {
+    background-color: rgba(255, 0, 0, 0.7);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    font-size: 0.8rem;
+    transition: background-color 0.2s;
+}
+
+.remove-favorite:hover {
+    background-color: rgba(255, 0, 0, 0.9);
+}
+
+.close-favorites {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    z-index: 1001;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.error-message {
+    display: none;
+}
+
+/* Dark mode toggle button */
+.mode-toggle {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    border: none;
+    color: var(--button-text);
+    font-size: 1.2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px var(--shadow-color);
+    z-index: 200;
+    transition: transform 0.3s ease, background-color 0.3s;
+}
+
+.mode-toggle:hover {
+    transform: scale(1.1);
+}
+
+.mode-toggle:active {
+    transform: scale(0.95);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .header .logo {
+        height: 65px; /* Adjusted for mobile */
+    }
+    
+    .main-content {
+        padding: 10px 0;
+        width: 100%;
+    }
+    
+    .comic-container {
+        max-width: 100%; /* Full width on mobile */
+        padding: 0;
+        margin: 0;
+        border-radius: 0; /* No rounded corners on mobile */
+        box-shadow: none; /* No shadow on mobile for comic container */
+    }
+    
+    .comic-display {
+        padding: 0; /* No padding on mobile */
+    }
+    
+    .comic-display img {
+        border-radius: 0; /* No rounded corners on mobile */
+    }
+    
+    .comic-selector {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .date-picker {
+        width: 100%;
+        margin: 0;
+    }
+    
+    .comments-section {
+        margin-bottom: 70px;
+    }
+    
+    .nav-button {
+        margin: 5px 0;
+    }
+
+    .mode-toggle {
+        top: auto;
+        bottom: 60px;
+        right: 10px;
+    }
+}
