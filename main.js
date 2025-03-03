@@ -748,6 +748,19 @@ document.addEventListener('DOMContentLoaded', () => {
         );
     };
 
+    // Fix resetReplyState function - make sure it properly cleans up
+    const resetReplyState = () => {
+        console.log('Resetting reply state');
+        replyingToComment = null;
+        const replyIndicator = document.querySelector('.reply-indicator');
+        if (replyIndicator) {
+            replyIndicator.remove();
+        }
+        
+        // Remove highlight from all comments
+        document.querySelectorAll('.comment').forEach(el => el.classList.remove('replying-to'));
+    };
+
     // Favorites functionality - Optimize favorites display
     const loadFavorites = async () => {
         try {
@@ -1214,30 +1227,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
     submitCommentBtn.addEventListener('click', async () => {
         const comment = commentInput.value.trim();
-        if (!comment) return;
-
+        if (!comment) {
+            showFeedback('Please enter a comment', true);
+            return;
+        }
+    
         console.log('Submitting comment:', comment);
         console.log('Current date for comment:', formatDate(currentDate));
-
+        console.log('Replying to comment:', replyingToComment ? replyingToComment.id : 'None');
+    
         submitCommentBtn.disabled = true;
         try {
             // Check if we're replying to a comment
             const parentId = replyingToComment ? replyingToComment.id : null;
             
-            await api.addComment(formatDate(currentDate), comment, parentId);
+            // Format the date properly
+            const formattedDate = formatDate(currentDate);
+            console.log('Formatted date:', formattedDate);
+            
+            // Add the comment
+            await api.addComment(formattedDate, comment, parentId);
             commentInput.value = '';
             
             // Reset reply state
             resetReplyState();
             
+            showFeedback('Comment added successfully');
+            
             // Add a slight delay before refreshing comments
             setTimeout(() => {
                 displayComments(currentDate);
             }, 500);
-            console.log('Comment submitted successfully');
         } catch (error) {
             console.error('Error adding comment:', error);
-            showFeedback('Failed to add comment', true);
+            showFeedback(`Failed to add comment: ${error.message}`, true);
         } finally {
             submitCommentBtn.disabled = false;
         }

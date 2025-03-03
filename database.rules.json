@@ -3,12 +3,17 @@
     ".read": "auth != null",
     ".write": "auth != null",
     "comments": {
+      ".read": true,
+      ".write": true,
       "$comicDate": {
         ".indexOn": ["timestamp"]
       }
     },
     "favorites": {
+      ".read": true,
       "$userId": {
+        ".read": true,
+        ".write": "auth != null || $userId === query.val",
         ".indexOn": ["date"]
       }
     }

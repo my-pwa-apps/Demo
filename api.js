@@ -162,24 +162,41 @@ class ComicsAPI {
         if (!commentText || !commentText.trim()) {
             throw new Error('Comment cannot be empty');
         }
+
+        // Make sure we have a valid comic date format
+        if (!comicDate || typeof comicDate !== 'string') {
+            console.error('Invalid comic date:', comicDate);
+            throw new Error('Invalid comic date format');
+        }
         
         const text = commentText.trim();
         if (text.length > 1000) {
             throw new Error('Comment is too long (maximum 1000 characters)');
         }
         
+        // Make sure we have a username
+        if (!this.username) {
+            console.warn('Username not set, using Anonymous');
+            this.username = 'Anonymous';
+        }
+
+        // Create comment object
         const newComment = {
-            username: this.username || 'Anonymous',
+            username: this.username,
             text,
             timestamp: firebase.database.ServerValue.TIMESTAMP
         };
         
         // If this is a reply, add the parentId
         if (parentId) {
+            console.log('Adding reply to comment:', parentId);
             newComment.parentId = parentId;
         }
         
         try {
+            console.log('Submitting comment to Firebase:', JSON.stringify(newComment));
+            console.log('For comic date:', comicDate);
+            
             const commentsRef = this.db.ref(`comments/${comicDate}`);
             const newCommentRef = commentsRef.push(); 
             await newCommentRef.set(newComment);
@@ -189,10 +206,11 @@ class ComicsAPI {
                 delete window.commentsCache[comicDate];
             }
             
+            console.log('Comment added successfully with ID:', newCommentRef.key);
             return { ...newComment, id: newCommentRef.key };
         } catch (error) {
-            console.error('Error adding comment:', error);
-            throw error;
+            console.error('Firebase error adding comment:', error);
+            throw new Error(`Failed to add comment: ${error.message}`);
         }
     }
 
