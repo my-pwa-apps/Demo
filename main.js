@@ -1259,6 +1259,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (favoritesCounter) {
         favoritesCounter.style.display = 'none';
     }
+    
+    // Initial favorites count update if current date is already set
+    if (currentDate) {
+        updateFavoritesCount(formatDateForStorage(currentDate));
+    }
 });
 
 // New function to update navigation buttons state
