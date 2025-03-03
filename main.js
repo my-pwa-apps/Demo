@@ -4,10 +4,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const comicDateInput = document.getElementById('comic-date');
     const favoriteComicBtn = document.getElementById('favorite-comic');
     const commentsList = document.getElementById('comments-list');
-    // Add dark mode toggle to DOM Elements
-    const modeToggleBtn = document.getElementById('mode-toggle'); // Moved here
+    const modeToggleBtn = document.getElementById('mode-toggle');
     const themeColor = document.getElementById('theme-color');
-    const favoritesCountElement = document.getElementById('favorites-count'); // Add this line
+    const favoritesCountElement = document.getElementById('favorites-count');
+    const favoritesCounter = document.querySelector('.favorites-counter');
     
     // Cache navigation buttons
     const prevComicBtn = document.getElementById('prev-comic');
@@ -19,6 +19,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const submitCommentBtn = document.getElementById('submit-comment');
     const commentInput = document.getElementById('comment-input');
 
+    // Define comic date boundaries
+    const FIRST_COMIC_DATE = new Date('1978-06-19');
+    const LAST_COMIC_DATE = new Date(); // Today
+    
     // Initialize API and state
     const api = new ComicsAPI();
     let currentDate = new Date();
@@ -139,10 +143,6 @@ document.addEventListener('DOMContentLoaded', () => {
             favoriteComicBtn.querySelector('i').style.color = '';
         }
     };
-
-    // Define comic date boundaries at the top of the file
-    const FIRST_COMIC_DATE = new Date('1978-06-19');
-    const LAST_COMIC_DATE = new Date(); // Today
 
     // Add helper function to check if a date is within valid comic range
     const isValidComicDate = (date) => {
@@ -276,7 +276,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             // After successful comic loading, update favorites count
-            updateFavoritesCount(formatDateForStorage(currentDate));
+            const storageDate = formatDateForStorage(currentDate);
+            updateFavoritesCount(storageDate);
         } catch (error) {
             console.error('Error loading comic:', error);
             hideLoadingIndicator();
@@ -1254,6 +1255,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Make sure navigation buttons are updated initially
     updateNavigationButtons();
+    
+    // Hide the favorites counter initially until we have data
+    if (favoritesCounter) {
+        favoritesCounter.style.display = 'none';
+    }
 });
 
 // New function to update navigation buttons state
@@ -1274,7 +1280,7 @@ const updateNavigationButtons = () => {
 // Update view favorites button to use heart
 viewFavoritesBtn.innerHTML = '<i class="fas fa-list"></i>';
 
-// New function to count and update favorites
+// New function to count and update favorites - now with conditional display
 const updateFavoritesCount = async (comicDate) => {
     try {
         // Get all users' favorites for this comic
@@ -1290,15 +1296,22 @@ const updateFavoritesCount = async (comicDate) => {
             }
         });
         
-        // Update the counter in the UI
-        if (favoritesCountElement) {
+        // Update the counter in the UI and hide if zero
+        if (favoritesCountElement && favoritesCounter) {
             favoritesCountElement.textContent = count;
+            
+            // Hide counter if zero, show otherwise
+            if (count === 0) {
+                favoritesCounter.style.display = 'none';
+            } else {
+                favoritesCounter.style.display = 'flex';
+            }
         }
     } catch (error) {
         console.error('Error counting favorites:', error);
-        // Don't display error to user, just show 0
-        if (favoritesCountElement) {
-            favoritesCountElement.textContent = '0';
+        // Hide on error
+        if (favoritesCounter) {
+            favoritesCounter.style.display = 'none';
         }
     }
 };
