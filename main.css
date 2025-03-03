@@ -444,10 +444,33 @@ body {
 }
 
 .comment-submit-feedback {
-    bottom: 65px; /* Move up to avoid bottom nav */
-    padding: 6px 12px;
-    font-size: 0.9rem;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    position: fixed;
+    left: 50%;
+    top: 60px;
+    transform: translateX(-50%);
+    background: var(--primary-color);
+    color: white;
+    padding: 6px 10px; /* Reduced padding */
+    border-radius: 16px; /* Smaller radius */
+    z-index: 1500;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-weight: 500;
+    font-size: 0.8rem; /* Even smaller font */
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2); /* Less pronounced shadow */
+    width: auto; /* Let it size to content */
+    max-width: fit-content; /* Better than min-content for some messages */
+    white-space: nowrap; /* Prevent text wrapping */
+    pointer-events: none; /* Allow clicking through the notification */
+}
+
+.comment-submit-feedback.error {
+    background-color: #f44336;
+}
+
+.comment-submit-feedback.show {
+    opacity: 0.95;
 }
 
 /* Delete Comment Button */
@@ -666,9 +689,9 @@ body {
     transition: transform 0.3s ease, background-color 0.3s;
 }
 
-/* Account Button - consistently positioned at top left */
+/* Account Button - fixed at top left corner */
 .account-button {
-    position: fixed; /* Changed from fixed to match mode-toggle */
+    position: fixed !important; /* Added !important to override any other positioning */
     top: 10px;
     left: 10px;
     width: 40px;
@@ -683,27 +706,13 @@ body {
     align-items: center;
     cursor: pointer;
     box-shadow: 0 2px 5px var(--shadow-color);
-    z-index: 200;
+    z-index: 200; /* Make sure it has sufficient z-index */
     transition: transform 0.3s ease, background-color 0.3s;
 }
 
 /* Android-specific install button - repositioned to avoid overlap */
 .android-install-btn {
-    position: fixed;
-    right: 20px;
-    bottom: 130px; /* Move higher up to avoid conflict with bottom nav */
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 30px;
-    padding: 8px 16px; /* Reduced padding */
-    font-size: 0.9rem; /* Smaller font */
-    font-weight: 600;
-    z-index: 900;
-    display: none;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    animation: pulse 2s infinite;
-    cursor: pointer;
+    display: none !important; /* Force hide with !important */
 }
 
 /* Improved feedback message - compact, centered with content width */
@@ -714,17 +723,17 @@ body {
     transform: translateX(-50%);
     background: var(--primary-color);
     color: white;
-    padding: 8px 16px;
-    border-radius: 20px;
+    padding: 6px 10px; /* Reduced padding */
+    border-radius: 16px; /* Smaller radius */
     z-index: 1500;
     opacity: 0;
     transition: opacity 0.3s;
     font-weight: 500;
-    font-size: 0.9rem;
+    font-size: 0.8rem; /* Even smaller font */
     text-align: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    width: auto; /* Let it size to content instead of fixed width */
-    max-width: min-content; /* Make it as wide as the content needs */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2); /* Less pronounced shadow */
+    width: auto; /* Let it size to content */
+    max-width: fit-content; /* Better than min-content for some messages */
     white-space: nowrap; /* Prevent text wrapping */
     pointer-events: none; /* Allow clicking through the notification */
 }
@@ -874,8 +883,10 @@ body {
     }
     
     .account-button {
+        position: fixed !important;
         top: 10px;
         left: 10px;
+        z-index: 200;
     }
     
     .comic-image {
@@ -884,7 +895,7 @@ body {
     }
     
     .install-banner {
-        bottom: 60px;
+        display: none !important; /* Force hide with !important */
     }
     
     .install-content {
@@ -908,9 +919,10 @@ body {
     }
     
     .comment-submit-feedback {
-        font-size: 0.85rem; /* Smaller on mobile */
-        padding: 6px 12px; /* Less padding on mobile */
-        top: 50px; /* Position slightly higher on mobile */
+        font-size: 0.75rem; /* Smaller on mobile */
+        padding: 4px 8px; /* Even less padding on mobile */
+        top: 45px; /* Position slightly higher on mobile */
+        max-width: 80%; /* Limit width on small screens */
     }
 }
 

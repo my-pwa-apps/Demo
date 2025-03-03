@@ -153,13 +153,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 date = parseDate(date) || new Date();
             }
             
-            // Check date bounds and adjust if necessary
+            // Check date bounds and adjust if necessary - no notifications
             if (date < FIRST_COMIC_DATE) {
                 date = new Date(FIRST_COMIC_DATE);
-                showFeedback("This is the first Garfield comic");
+                // Removed showFeedback call
             } else if (date > LAST_COMIC_DATE) {
                 date = new Date(LAST_COMIC_DATE);
-                showFeedback("No future comics available");
+                // Removed showFeedback call
             }
             
             // Update currentDate to respect boundaries
@@ -887,7 +887,9 @@ document.addEventListener('DOMContentLoaded', () => {
             currentDate = prevDate;
             fetchComic(currentDate);
         } else {
-            showFeedback("You've reached the first Garfield comic");
+            // Removed showFeedback call - silently stay at first comic
+            currentDate = new Date(FIRST_COMIC_DATE);
+            fetchComic(currentDate);
         }
     });
 
@@ -900,7 +902,9 @@ document.addEventListener('DOMContentLoaded', () => {
             currentDate = nextDate;
             fetchComic(currentDate);
         } else {
-            showFeedback("No future comics available");
+            // Removed showFeedback call - silently stay at last comic
+            currentDate = new Date(LAST_COMIC_DATE);
+            fetchComic(currentDate);
         }
     });
 
@@ -1033,7 +1037,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentDate = nextDate;
                 fetchComic(currentDate);
             } else {
-                showFeedback("No future comics available");
+                // Removed showFeedback call
+                // Stay at last available comic
+                currentDate = new Date(LAST_COMIC_DATE);
+                fetchComic(currentDate);
             }
         } else if (touchDiff < -sensitivity) {
             // Swipe right: previous comic
@@ -1044,7 +1051,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentDate = prevDate;
                 fetchComic(currentDate);
             } else {
-                showFeedback("You've reached the first Garfield comic");
+                // Removed showFeedback call
+                // Stay at first available comic
+                currentDate = new Date(FIRST_COMIC_DATE);
+                fetchComic(currentDate);
             }
         }
     };
@@ -1081,6 +1091,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Show the appropriate installation prompt based on platform - fix for Android
     const showInstallPrompt = () => {
+        // Don't show any install prompts - they're annoying
+        return;
+        
+        /* Original code removed:
         // Don't show prompts if already installed
         if (window.matchMedia('(display-mode: standalone)').matches || 
             window.navigator.standalone === true) {
@@ -1105,6 +1119,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Smaller notification
             showFeedback('Install for offline use', false, 2000);
         }
+        */
     };
 
     // Listen for the beforeinstallprompt event
@@ -1169,7 +1184,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Check if we should show the install prompt after page load
     window.addEventListener('load', () => {
-        // Wait a moment for the beforeinstallprompt event
+        // Removed the timed display of install prompts
+        /*
         setTimeout(() => {
             const lastDismissed = localStorage.getItem('installBannerDismissed');
             const hoursPassed = lastDismissed ? 
@@ -1181,6 +1197,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showInstallPrompt();
             }
         }, 1500);
+        */
     });
 
     // Listen for the appinstalled event
