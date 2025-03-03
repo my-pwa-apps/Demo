@@ -509,9 +509,24 @@ document.addEventListener('DOMContentLoaded', () => {
         return formatDateForStorage(date); // Always use yyyy-mm-dd for internal storage
     };
 
-    // Update displayFavorites to remove the title
+    // Update displayFavorites to include title and fix layout
     const displayFavorites = () => {
         favoritesGrid.innerHTML = '';
+        
+        // Update favorites header to include title
+        const favoritesActions = favoritesView.querySelector('.favorites-actions');
+        favoritesActions.innerHTML = `
+            <h2 class="favorites-title"><i class="fas fa-star"></i> Your Favorites</h2>
+            <button class="close-favorites" title="Close favorites">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        // Re-attach event listener to the new close button
+        const closeButton = favoritesActions.querySelector('.close-favorites');
+        closeButton.addEventListener('click', () => {
+            favoritesView.classList.remove('show');
+        });
         
         // Get all favorites as array and validate them
         const allFavorites = Object.entries(favorites).map(([key, fav]) => {
@@ -1008,7 +1023,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const installBtn = document.getElementById('install-btn');
     const closeInstallBanner = document.getElementById('close-install-banner');
 
-    // Show the appropriate installation prompt based on platform
+    // Show the appropriate installation prompt based on platform - fix for Android
     const showInstallPrompt = () => {
         // Don't show prompts if already installed
         if (window.matchMedia('(display-mode: standalone)').matches || 
@@ -1023,9 +1038,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // Show Android-specific install button
             androidInstallBtn.style.display = 'flex';
             
-            // On Android, also show an installation tip after a short delay
+            // On Android, also show an installation tip after a short delay, but smaller
             setTimeout(() => {
-                showFeedback('Tap "Add to Home Screen" to install', false, 5000);
+                showFeedback('Tap to install app', false, 3000);
             }, 3000);
         } else if (deferredPrompt) {
             // Show the install banner for other platforms
