@@ -775,11 +775,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const comment = commentInput.value.trim();
         if (!comment) return;
 
+        console.log('Submitting comment:', comment); // Debugging log
+
         submitCommentBtn.disabled = true;
         try {
             await api.addComment(formatDate(currentDate), comment);
             commentInput.value = '';
             displayComments(currentDate);
+            console.log('Comment submitted successfully'); // Debugging log
         } catch (error) {
             console.error('Error adding comment:', error);
             showFeedback('Failed to add comment', true);

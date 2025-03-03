@@ -49,6 +49,7 @@ class ComicsAPI {
     }
 
     async addComment(comicDate, commentText) {
+        console.log('Adding comment:', commentText); // Debugging log
         const newComment = {
             username: this.username,
             text: commentText,
@@ -57,6 +58,7 @@ class ComicsAPI {
         const commentsRef = this.db.ref(`comments/${comicDate}`);
         const newCommentRef = commentsRef.push(); // Generate unique key
         await newCommentRef.set(newComment);
+        console.log('Comment added:', newComment); // Debugging log
         return newComment;
     }
 

@@ -42,6 +42,14 @@
         auth.signInAnonymously().catch(error => {
             console.error('Error signing in anonymously:', error);
         });
+
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                console.log('User signed in:', user);
+            } else {
+                console.log('User signed out');
+            }
+        });
     </script>
 </head>
 <body>
