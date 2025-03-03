@@ -45,8 +45,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // New function to count and update favorites - Fixed calculation for specific comic
     const updateFavoritesCount = async (comicDate) => {
+        if (!comicDate) return;
+        
         try {
-            // Get all users' favorites
+            // Optimize by checking cache first
+            if (window.favoritesCountCache && window.favoritesCountCache[comicDate]) {
+                const cachedCount = window.favoritesCountCache[comicDate];
+                updateFavoritesCountUI(cachedCount);
+                return;
+            }
+            
             const snapshot = await firebase.database().ref('favorites').once('value');
             const allUserFavorites = snapshot.val() || {};
             
@@ -59,19 +67,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             
-            console.log(`Counted ${count} favorites for comic date: ${comicDate}`);
+            // Cache the count for this session
+            if (!window.favoritesCountCache) window.favoritesCountCache = {};
+            window.favoritesCountCache[comicDate] = count;
             
-            // Update the counter in the UI and hide if zero
-            if (favoritesCountElement && favoritesCounter) {
-                favoritesCountElement.textContent = count;
-                
-                // Hide counter if zero, show otherwise
-                if (count === 0) {
-                    favoritesCounter.style.display = 'none';
-                } else {
-                    favoritesCounter.style.display = 'flex';
-                }
-            }
+            // Update UI with the count
+            updateFavoritesCountUI(count);
         } catch (error) {
             console.error('Error counting favorites:', error);
             // Hide on error
@@ -79,6 +80,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 favoritesCounter.style.display = 'none';
             }
         }
+    };
+
+    // Separate UI update for better code organization
+    const updateFavoritesCountUI = (count) => {
+        if (!favoritesCountElement || !favoritesCounter) return;
+        
+        favoritesCountElement.textContent = count;
+        
+        // Hide counter if zero, show otherwise
+        favoritesCounter.style.display = count > 0 ? 'flex' : 'none';
     };
 
     // Date formatting functions - Memoize for performance
@@ -152,19 +163,25 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // UI helper functions - Batch DOM updates
     const updateUI = (comicSrc, formattedDate) => {
-        comicImg.src = comicSrc;
-        comicImg.alt = `Garfield Comic for ${formattedDate}`;
-        comicDateInput.value = formatDateForStorage(new Date(formattedDate));
-        
-        // Update navigation buttons based on current date
-        updateNavigationButtons();
-        
-        // Also update favorite button to ensure correct state when returning to a comic
-        const storageDate = formatDateForStorage(new Date(formattedDate));
-        updateFavoriteButton(storageDate);
-        
-        // Re-fetch favorites count when updating UI for proper display
-        updateFavoritesCount(storageDate);
+        try {
+            comicImg.src = comicSrc;
+            comicImg.alt = `Garfield Comic for ${formattedDate}`;
+            comicDateInput.value = formatDateForStorage(new Date(formattedDate));
+            
+            // Update navigation buttons based on current date
+            updateNavigationButtons();
+            
+            // Also update favorite button to ensure correct state when returning to a comic
+            const storageDate = formatDateForStorage(new Date(formattedDate));
+            updateFavoriteButton(storageDate);
+            
+            // Re-fetch favorites count when updating UI for proper display
+            updateFavoritesCount(storageDate).catch(err => 
+                console.warn('Failed to update favorites count:', err));
+        } catch (error) {
+            console.error('Error updating UI:', error);
+            showFeedback('Error updating the display', true);
+        }
     };
 
     const showLoadingIndicator = () => {
@@ -217,13 +234,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 date = parseDate(date) || new Date();
             }
             
-            // Check date bounds and adjust if necessary - no notifications
+            // Enforce date boundaries
             if (date < FIRST_COMIC_DATE) {
                 date = new Date(FIRST_COMIC_DATE);
-                // Removed showFeedback call
             } else if (date > LAST_COMIC_DATE) {
                 date = new Date(LAST_COMIC_DATE);
-                // Removed showFeedback call
             }
             
             // Update currentDate to respect boundaries
@@ -333,6 +348,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } finally {
                 hideLoadingIndicator();
+                
+                // Ensure navigation buttons are updated regardless of success/failure
+                updateNavigationButtons();
             }
             
             // After successful comic loading, update favorites count
@@ -343,10 +361,8 @@ document.addEventListener('DOMContentLoaded', () => {
             showFeedback('Failed to load comic: ' + error.message, true);
             comicImg.src = '';
             comicImg.alt = 'Comic not available';
+            updateNavigationButtons();
         }
-        
-        // Update navigation buttons after successful loading
-        updateNavigationButtons();
     };
 
     // Improved function to extract comic image from HTML
@@ -574,33 +590,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 toggleBtn.innerHTML = `<i class="fas fa-chevron-down"></i> <span class="reply-count">${replyCount}</span>`;
                 toggleBtn.title = `${replyCount} ${replyCount === 1 ? 'reply' : 'replies'}`;
                 
-                toggleBtn.addEventListener('click', () => {
-                    const isCollapsed = toggleBtn.classList.toggle('collapsed');
-                    
-                    // Find all replies to this comment
-                    const replies = document.querySelectorAll(`.comment-reply[data-parent-id="${comment.id}"]`);
-                    replies.forEach(reply => {
-                        if (isCollapsed) {
-                            reply.classList.add('collapsed');
-                        } else {
-                            reply.classList.remove('collapsed');
-                        }
-                    });
-                    
-                    // Find the replies wrapper and toggle it
-                    const repliesWrapper = document.querySelector(`.replies-wrapper[data-parent-id="${comment.id}"]`);
-                    if (repliesWrapper) {
-                        if (isCollapsed) {
-                            repliesWrapper.style.display = 'none';
-                        } else {
-                            repliesWrapper.style.display = 'block';
-                        }
-                    }
-                });
+                // Use a single event handler to toggle replies
+                toggleBtn.addEventListener('click', () => toggleReplies(toggleBtn, comment.id));
                 
                 commentHeader.appendChild(toggleBtn);
             }
         });
+    };
+
+    // Separate function for toggling replies to reduce duplicated code
+    const toggleReplies = (toggleBtn, commentId) => {
+        const isCollapsed = toggleBtn.classList.toggle('collapsed');
+        
+        // Find the replies wrapper
+        const repliesWrapper = document.querySelector(`.replies-wrapper[data-parent-id="${commentId}"]`);
+        if (!repliesWrapper) return;
+        
+        if (isCollapsed) {
+            // Smoothly collapse
+            repliesWrapper.classList.add('collapsed');
+            repliesWrapper.style.display = 'none';
+            
+            // Find and collapse all replies
+            document.querySelectorAll(`.comment-reply[data-parent-id="${commentId}"]`)
+                .forEach(reply => reply.classList.add('collapsed'));
+        } else {
+            // Smoothly expand
+            repliesWrapper.classList.remove('collapsed');
+            repliesWrapper.style.display = 'block';
+            
+            // Find and expand all replies
+            document.querySelectorAll(`.comment-reply[data-parent-id="${commentId}"]`)
+                .forEach(reply => reply.classList.remove('collapsed'));
+        }
     };
 
     // Function to create a single comment element
@@ -675,6 +697,55 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         return commentElement;
+    };
+
+    // Improved reply handling with proper cleanup
+    const setReplyingTo = (comment) => {
+        // Clean up any existing reply UI first
+        resetReplyState();
+        
+        replyingToComment = comment;
+        
+        // Create the reply indicator
+        const replyIndicator = document.createElement('div');
+        replyIndicator.className = 'reply-indicator';
+        const commentInputContainer = document.querySelector('.comments-section');
+        commentInputContainer.insertBefore(replyIndicator, commentInput);
+        
+        replyIndicator.innerHTML = `
+            <span>Replying to <strong>${comment.username || 'Anonymous'}</strong>:</span>
+            <button class="cancel-reply-btn"><i class="fas fa-times"></i></button>
+        `;
+        
+        // Add cancel reply button handler with proper cleanup
+        const cancelBtn = replyIndicator.querySelector('.cancel-reply-btn');
+        cancelBtn.addEventListener('click', resetReplyState, { once: true });
+        
+        // Focus the comment input
+        commentInput.focus();
+        
+        // Highlight the comment we're replying to
+        document.querySelectorAll('.comment').forEach(el => el.classList.remove('replying-to'));
+        const targetComment = document.querySelector(`.comment[data-comment-id="${comment.id}"]`);
+        if (targetComment) {
+            targetComment.classList.add('replying-to');
+            
+            // Scroll the comment into view if needed
+            if (!isElementInViewport(targetComment)) {
+                targetComment.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    };
+
+    // Helper function to check if element is visible
+    const isElementInViewport = (el) => {
+        const rect = el.getBoundingClientRect();
+        return (
+            rect.top >= 0 &&
+            rect.left >= 0 &&
+            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+            rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+        );
     };
 
     // Favorites functionality - Optimize favorites display

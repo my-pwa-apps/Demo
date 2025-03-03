@@ -151,7 +151,7 @@ body {
     border-radius: 4px;
     overflow: visible; /* Changed from hidden to visible to prevent counter clipping */
     position: relative; /* Ensure position relative is applied */
-    min-height: 100px; /* Add minimum height so counter is always visible */
+    min-height: 200px; /* Add minimum height so counter is always visible */
 }
 
 /* Dark mode specific comic container enhancements */
@@ -483,10 +483,6 @@ body {
     transition: opacity 0.2s;
 }
 
-.delete-comment-btn:hover {
-    opacity: 1;
-}
-
 /* Reply comments styling - Adding collapsible functionality */
 .comment-reply {
     position: relative;
@@ -495,7 +491,7 @@ body {
     margin-left: 15px;
     margin-top: 5px;
     margin-bottom: 5px;
-    transition: height 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 /* Collapsed state for replies */
@@ -624,17 +620,16 @@ body {
     transform: translateX(-50%);
     background: var(--primary-color);
     color: white;
-    padding: 6px 10px; /* Reduced padding */
-    border-radius: 16px; /* Smaller radius */
+    padding: 8px 16px; /* Reduced padding */
+    border-radius: 20px; /* Smaller radius */
     z-index: 1500;
     opacity: 0;
     transition: opacity 0.3s;
     font-weight: 500;
-    font-size: 0.8rem; /* Even smaller font */
+    font-size: 0.9rem; /* Even smaller font */
     text-align: center;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2); /* Less pronounced shadow */
-    width: auto; /* Let it size to content */
-    max-width: fit-content; /* Better than min-content for some messages */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2); /* Less pronounced shadow */
+    max-width: 80%; /* Let it size to content */
     white-space: nowrap; /* Prevent text wrapping */
     pointer-events: none; /* Allow clicking through the notification */
 }
@@ -872,37 +867,6 @@ body {
     display: none !important; /* Force hide with !important */
 }
 
-/* Improved feedback message - compact, centered with content width */
-.comment-submit-feedback {
-    position: fixed;
-    left: 50%;
-    top: 60px;
-    transform: translateX(-50%);
-    background: var(--primary-color);
-    color: white;
-    padding: 6px 10px; /* Reduced padding */
-    border-radius: 16px; /* Smaller radius */
-    z-index: 1500;
-    opacity: 0;
-    transition: opacity 0.3s;
-    font-weight: 500;
-    font-size: 0.8rem; /* Even smaller font */
-    text-align: center;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2); /* Less pronounced shadow */
-    width: auto; /* Let it size to content */
-    max-width: fit-content; /* Better than min-content for some messages */
-    white-space: nowrap; /* Prevent text wrapping */
-    pointer-events: none; /* Allow clicking through the notification */
-}
-
-.comment-submit-feedback.error {
-    background-color: #f44336;
-}
-
-.comment-submit-feedback.show {
-    opacity: 0.95;
-}
-
 @keyframes pulse {
     0% { box-shadow: 0 0 0 0 rgba(255, 111, 0, 0.7); }
     70% { box-shadow: 0 0 0 10px rgba(255, 111, 0, 0); }
@@ -959,34 +923,6 @@ body {
     border: 1px solid var(--input-border);
 }
 
-/* Improved feedback message - more noticeable */
-.comment-submit-feedback {
-    position: fixed;
-    left: 50%;
-    top: 60px; /* Position at top for better visibility */
-    transform: translateX(-50%);
-    background: var(--primary-color);
-    color: white;
-    padding: 8px 16px; /* Reduced padding */
-    border-radius: 20px; /* Smaller radius */
-    z-index: 1500;
-    opacity: 0;
-    transition: opacity 0.3s;
-    font-weight: 500;
-    font-size: 0.9rem; /* Smaller font */
-    text-align: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    max-width: 80%;
-}
-
-.comment-submit-feedback.error {
-    background-color: #f44336;
-}
-
-.comment-submit-feedback.show {
-    opacity: 0.95;
-}
-
 /* Favorites counter overlay - Fixed positioning within comic-wrapper */
 .favorites-counter {
     position: absolute;
@@ -1004,7 +940,11 @@ body {
     opacity: 0.85;
     max-width: fit-content;
     margin: 0;
-    /* Remove pointer-events none so we can interact with it */
+    pointer-events: auto; /* Ensure it's interactive if needed */
+    /* Add more constraint to guarantee it stays within the comic */
+    max-width: 98%;
+    min-width: 40px;
+    overflow: hidden;
 }
 
 .favorites-counter:hover {
@@ -1024,6 +964,17 @@ body {
 
 .dark-mode .favorites-counter {
     background-color: rgba(40, 40, 40, 0.7);
+}
+
+/* Enhanced collapsible replies with smoother transitions */
+.replies-wrapper {
+    transition: height 0.3s ease, opacity 0.3s ease;
+    overflow: hidden;
+}
+
+.replies-wrapper.collapsed {
+    height: 0;
+    opacity: 0;
 }
 
 /* Responsive Design */

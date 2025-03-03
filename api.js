@@ -118,9 +118,22 @@ class ComicsAPI {
     }
 
     // Improved comments methods
+    // Optimize comment retrieval with caching
     async getComments(comicDate) {
         console.log('Fetching comments for date:', comicDate);
         try {
+            // Check memory cache first for better performance
+            if (window.commentsCache && window.commentsCache[comicDate]) {
+                const cachedTimestamp = window.commentsCache[comicDate].timestamp;
+                const currentTime = Date.now();
+                // Use cache if it's less than 30 seconds old
+                if (currentTime - cachedTimestamp < 30000) {
+                    console.log('Using cached comments');
+                    return window.commentsCache[comicDate].data;
+                }
+            }
+            
+            // If not cached, fetch from Firebase
             const snapshot = await this.db.ref(`comments/${comicDate}`).once('value');
             const commentsObj = snapshot.val() || {};
             
@@ -130,6 +143,13 @@ class ComicsAPI {
                 ...comment
             }));
             
+            // Cache the result
+            if (!window.commentsCache) window.commentsCache = {};
+            window.commentsCache[comicDate] = {
+                data: commentsArray,
+                timestamp: Date.now()
+            };
+            
             return commentsArray;
         } catch (error) {
             console.error('Error fetching comments:', error);
@@ -137,14 +157,20 @@ class ComicsAPI {
         }
     }
 
+    // Improve comment adding with better validation and error handling
     async addComment(comicDate, commentText, parentId = null) {
-        if (!commentText.trim()) {
+        if (!commentText || !commentText.trim()) {
             throw new Error('Comment cannot be empty');
         }
         
+        const text = commentText.trim();
+        if (text.length > 1000) {
+            throw new Error('Comment is too long (maximum 1000 characters)');
+        }
+        
         const newComment = {
-            username: this.username,
-            text: commentText.trim(),
+            username: this.username || 'Anonymous',
+            text,
             timestamp: firebase.database.ServerValue.TIMESTAMP
         };
         
@@ -157,6 +183,12 @@ class ComicsAPI {
             const commentsRef = this.db.ref(`comments/${comicDate}`);
             const newCommentRef = commentsRef.push(); 
             await newCommentRef.set(newComment);
+            
+            // Invalidate cache to ensure fresh data on next load
+            if (window.commentsCache && window.commentsCache[comicDate]) {
+                delete window.commentsCache[comicDate];
+            }
+            
             return { ...newComment, id: newCommentRef.key };
         } catch (error) {
             console.error('Error adding comment:', error);
