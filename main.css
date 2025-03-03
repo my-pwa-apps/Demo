@@ -657,6 +657,64 @@ body {
     transform: scale(0.95);
 }
 
+/* PWA Install Banner */
+.install-banner {
+    position: fixed;
+    bottom: 70px;
+    left: 0;
+    right: 0;
+    background: var(--primary-color);
+    color: white;
+    padding: 10px 15px;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+    z-index: 100;
+    display: none;
+    transform: translateY(0);
+    transition: transform 0.3s ease;
+}
+
+.install-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.install-content p {
+    flex: 1;
+    margin-right: 15px;
+    font-weight: 500;
+}
+
+.install-content .btn {
+    background-color: white;
+    color: var(--primary-color);
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-right: 10px;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.btn-close:hover {
+    opacity: 1;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .header .logo {
@@ -712,5 +770,17 @@ body {
     .comic-image {
         box-shadow: none;
         border-radius: 0;
+    }
+    
+    .install-banner {
+        bottom: 60px;
+    }
+    
+    .install-content {
+        flex-wrap: wrap;
+    }
+    
+    .install-content p {
+        margin-bottom: 8px;
     }
 }

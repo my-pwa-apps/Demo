@@ -1,20 +1,43 @@
 {
     "name": "Garfield Comics",
     "short_name": "Garfield",
-    "start_url": ".",
+    "start_url": "/index.html",
     "display": "standalone",
     "background_color": "#FF6F00",
     "theme_color": "#FF6F00",
     "description": "Read and enjoy Garfield comics.",
+    "orientation": "portrait",
+    "categories": ["entertainment", "comics"],
     "icons": [
         {
-            "src": "https://upload.wikimedia.org/wikipedia/en/thumb/b/bc/Garfield_the_Cat.svg/1200px-Garfield_the_Cat.svg.png",
+            "src": "icons/icon-192x192.png",
             "sizes": "192x192",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any"
         },
         {
-            "src": "https://upload.wikimedia.org/wikipedia/en/thumb/b/bc/Garfield_the_Cat.svg/1200px-Garfield_the_Cat.svg.png",
+            "src": "icons/icon-512x512.png",
             "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "icons/maskable-icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/maskable-icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ],
+    "screenshots": [
+        {
+            "src": "icons/screenshot.png",
+            "sizes": "1280x720",
             "type": "image/png"
         }
     ]

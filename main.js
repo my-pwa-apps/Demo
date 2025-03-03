@@ -900,6 +900,66 @@ document.addEventListener('DOMContentLoaded', () => {
     comicImg.addEventListener('touchmove', handleTouchMove, false);
     comicImg.addEventListener('touchend', handleTouchEnd, false);
 
+    // PWA Installation handling
+    let deferredPrompt;
+    
+    // Create installation banner
+    const installBanner = document.createElement('div');
+    installBanner.className = 'install-banner';
+    installBanner.style.display = 'none';
+    installBanner.innerHTML = `
+        <div class="install-content">
+            <p>Install Garfield Comics for offline use</p>
+            <button id="install-btn" class="btn">Install</button>
+            <button id="close-install-banner" class="btn-close"><i class="fas fa-times"></i></button>
+        </div>
+    `;
+    document.body.appendChild(installBanner);
+    
+    const installBtn = document.getElementById('install-btn');
+    const closeInstallBanner = document.getElementById('close-install-banner');
+    
+    // Listen for the beforeinstallprompt event
+    window.addEventListener('beforeinstallprompt', (e) => {
+        // Prevent Chrome 67 and earlier from automatically showing the prompt
+        e.preventDefault();
+        // Stash the event so it can be triggered later
+        deferredPrompt = e;
+        // Show the install banner
+        installBanner.style.display = 'block';
+    });
+    
+    // Installation button click handler
+    installBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        
+        // Show the install prompt
+        deferredPrompt.prompt();
+        
+        // Wait for the user to respond to the prompt
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`User response to the install prompt: ${outcome}`);
+        
+        // Clear the saved prompt since it can't be used again
+        deferredPrompt = null;
+        
+        // Hide the install banner
+        installBanner.style.display = 'none';
+    });
+    
+    // Close banner button handler
+    closeInstallBanner.addEventListener('click', () => {
+        installBanner.style.display = 'none';
+    });
+    
+    // Listen for the appinstalled event
+    window.addEventListener('appinstalled', (event) => {
+        console.log('App was successfully installed');
+        showFeedback('App installed successfully!');
+        // Hide the install banner
+        installBanner.style.display = 'none';
+    });
+
     // Initialize app
     initTheme();
     loadFavorites();
