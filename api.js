@@ -78,6 +78,18 @@ class ComicsAPI {
         return newComment;
     }
 
+    async deleteComment(comicDate, commentId) {
+        console.log('Deleting comment:', commentId, 'from date:', comicDate);
+        try {
+            await this.db.ref(`comments/${comicDate}/${commentId}`).remove();
+            console.log('Comment deleted successfully');
+            return true;
+        } catch (error) {
+            console.error('Error deleting comment:', error);
+            throw error;
+        }
+    }
+
     async cleanupFavorites() {
         return {};
     }

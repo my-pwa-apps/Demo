@@ -371,6 +371,7 @@ body {
     justify-content: space-between;
     margin-bottom: 3px;
     font-size: 0.85rem;
+    align-items: center;
 }
 
 .comment-user {
@@ -414,6 +415,27 @@ body {
     padding: 6px 12px;
     font-size: 0.9rem;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Delete Comment Button */
+.delete-comment-btn {
+    background: none;
+    border: none;
+    color: #ff6347; /* Tomato red */
+    cursor: pointer;
+    padding: 2px 5px;
+    font-size: 0.8rem;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    margin-left: auto;
+}
+
+.delete-comment-btn:hover {
+    opacity: 1;
+}
+
+.dark-mode .delete-comment-btn {
+    color: #ff8c7a; /* Lighter red for dark mode */
 }
 
 /* Favorites Section & Cards */

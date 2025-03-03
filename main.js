@@ -404,24 +404,58 @@ document.addEventListener('DOMContentLoaded', () => {
                         const commentElement = document.createElement('div');
                         commentElement.classList.add('comment');
                         
-                        // Format date in a more compact way
+                        // Format date in a more compact way with time
                         let dateStr = 'Unknown date';
                         try {
                             if (comment.timestamp) {
                                 const commentDate = new Date(comment.timestamp);
-                                dateStr = commentDate.toLocaleDateString(undefined, {month: 'short', day: 'numeric'});
+                                dateStr = commentDate.toLocaleDateString(undefined, {
+                                    month: 'short', 
+                                    day: 'numeric'
+                                }) + ' ' + commentDate.toLocaleTimeString(undefined, {
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                });
                             }
                         } catch (e) {
                             console.error('Error formatting comment date:', e);
                         }
                         
+                        // Check if this comment belongs to the current user
+                        const isCurrentUserComment = comment.username === api.username;
+                        
                         commentElement.innerHTML = `
                             <div class="comment-header">
                                 <span class="comment-user">${comment.username || 'Anonymous'}</span>
                                 <span class="comment-date">${dateStr}</span>
+                                ${isCurrentUserComment ? '<button class="delete-comment-btn" title="Delete comment"><i class="fas fa-trash"></i></button>' : ''}
                             </div>
                             <div class="comment-text">${comment.text}</div>
                         `;
+                        
+                        // Add event listener for delete button if this is user's comment
+                        if (isCurrentUserComment) {
+                            const deleteBtn = commentElement.querySelector('.delete-comment-btn');
+                            deleteBtn.addEventListener('click', async () => {
+                                try {
+                                    await api.deleteComment(formattedDate, comment.id);
+                                    commentElement.remove();
+                                    showFeedback('Comment deleted');
+                                    
+                                    // If there are no more comments, show "No comments yet" message
+                                    if (commentsList.children.length === 0) {
+                                        const noComments = document.createElement('div');
+                                        noComments.className = 'comment';
+                                        noComments.innerHTML = '<em>No comments yet.</em>';
+                                        commentsList.appendChild(noComments);
+                                    }
+                                } catch (error) {
+                                    console.error('Error deleting comment:', error);
+                                    showFeedback('Failed to delete comment', true);
+                                }
+                            });
+                        }
+                        
                         fragment.appendChild(commentElement);
                     });
                 }
