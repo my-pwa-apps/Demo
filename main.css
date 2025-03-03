@@ -722,7 +722,7 @@ body {
     cursor: pointer;
 }
 
-/* Improved feedback message - smaller size */
+/* Improved feedback message - compact, centered with content width */
 .comment-submit-feedback {
     position: fixed;
     left: 50%;
@@ -730,167 +730,27 @@ body {
     transform: translateX(-50%);
     background: var(--primary-color);
     color: white;
-    padding: 8px 16px; /* Reduced padding */
-    border-radius: 20px; /* Smaller radius */
+    padding: 8px 16px;
+    border-radius: 20px;
     z-index: 1500;
     opacity: 0;
     transition: opacity 0.3s;
     font-weight: 500;
-    font-size: 0.9rem; /* Smaller font */
+    font-size: 0.9rem;
     text-align: center;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    max-width: 80%;
+    width: auto; /* Let it size to content instead of fixed width */
+    max-width: min-content; /* Make it as wide as the content needs */
+    white-space: nowrap; /* Prevent text wrapping */
+    pointer-events: none; /* Allow clicking through the notification */
 }
 
-/* Account Button */
-.account-button {
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--primary-color);
-    border: none;
-    color: var(--button-text);
-    font-size: 1.2rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    box-shadow: 0 2px 5px var(--shadow-color);
-    z-index: 200;
-    transition: transform 0.3s ease, background-color 0.3s;
+.comment-submit-feedback.error {
+    background-color: #f44336;
 }
 
-.account-button:hover {
-    transform: scale(1.1);
-    background-color: var(--secondary-color);
-}
-
-/* User ID Dialog Styles */
-.user-id-dialog {
-    width: 90%;
-    max-width: 400px;
-    padding: 24px;
-}
-
-.user-id-dialog h3 {
-    margin-bottom: 15px;
-    text-align: center;
-    color: var(--primary-color);
-}
-
-.user-id-dialog p {
-    margin-bottom: 20px;
-    text-align: center;
-    font-size: 0.95rem;
-}
-
-.input-group {
-    margin-bottom: 15px;
-}
-
-.input-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 500;
-}
-
-.input-group input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid var(--input-border);
-    border-radius: 4px;
-    font-size: 1rem;
-    background-color: var(--input-bg);
-    color: var(--text-color);
-}
-
-.input-group input:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(255, 111, 0, 0.1);
-    outline: none;
-}
-
-.dialog-buttons {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-}
-
-.btn-secondary {
-    background-color: #6c757d;
-}
-
-.btn-secondary:hover {
-    background-color: #5a6268;
-}
-
-/* PWA Install Banner */
-.install-banner {
-    position: fixed;
-    bottom: 70px;
-    left: 0;
-    right: 0;
-    background: var(--primary-color);
-    color: white;
-    padding: 15px;
-    box-shadow: 0 -2px 20px rgba(0,0,0,0.3);
-    z-index: 1000;
-    display: none;
-    animation: slideUp 0.5s ease-out;
-}
-
-@keyframes slideUp {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
-}
-
-.install-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-.install-content p {
-    flex: 1;
-    margin-right: 15px;
-    font-weight: 500;
-    font-size: 1.1rem;
-}
-
-.install-content .btn {
-    background-color: white;
-    color: var(--primary-color);
-    border: none;
-    padding: 8px 15px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 600;
-    margin-right: 10px;
-    font-size: 1rem;
-}
-
-/* Android-specific install button */
-.android-install-btn {
-    position: fixed;
-    right: 20px;
-    bottom: 130px; /* Move higher up to avoid conflict with bottom nav */
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 30px;
-    padding: 8px 16px; /* Reduced padding */
-    font-size: 0.9rem; /* Smaller font */
-    font-weight: 600;
-    z-index: 900;
-    display: none;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    animation: pulse 2s infinite;
-    cursor: pointer;
+.comment-submit-feedback.show {
+    opacity: 0.95;
 }
 
 @keyframes pulse {
@@ -1064,9 +924,9 @@ body {
     }
     
     .comment-submit-feedback {
-        max-width: 90%;
-        font-size: 0.85rem; /* Even smaller on mobile */
-        padding: 6px 14px;
+        font-size: 0.85rem; /* Smaller on mobile */
+        padding: 6px 12px; /* Less padding on mobile */
+        top: 50px; /* Position slightly higher on mobile */
     }
 }
 
