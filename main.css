@@ -84,7 +84,7 @@ body {
     width: 100%;
     max-width: 100%;
     margin: 0;
-    padding: 5px 0; /* Reduced padding */
+    padding: 0; /* Removed padding to maximize space */
 }
 
 /* Enhanced comic container styling */
@@ -94,7 +94,7 @@ body {
     align-items: center;
     justify-content: center;
     width: 100%;
-    max-width: 98vw; /* Wider container using viewport width */
+    max-width: 100vw; /* Increased from 98vw to use full width */
     margin: 0 auto;
     padding: 0;
     box-shadow: 0 2px 6px var(--shadow-color);
@@ -119,7 +119,7 @@ body {
     align-items: center;
     width: 100%;
     margin: 0;
-    padding: 4px; /* Minimal padding */
+    padding: 0; /* Removed padding to maximize space */
     position: relative;
     background-color: transparent; /* Remove background */
     border-radius: 0; /* No border radius */
@@ -152,7 +152,7 @@ body {
     max-width: 100%; /* But don't overflow container */
     height: auto;
     object-fit: contain;
-    max-height: 85vh; /* Slightly increased max height */
+    max-height: 90vh; /* Increased max height to utilize more vertical space */
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12); /* Subtle shadow on image only */
     border-radius: 2px; /* Minimal border radius */
     transition: opacity 0.5s ease, box-shadow 0.3s ease;
@@ -642,6 +642,7 @@ body {
         margin: 0;
         border-radius: 0; /* No rounded corners on mobile */
         box-shadow: none; /* No shadow on mobile for comic container */
+        border: none; /* Removed border on mobile */
     }
     
     .comic-display {
