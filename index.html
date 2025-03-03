@@ -77,11 +77,11 @@
     </button>
     
     <main class="main-content">
-        <!-- Add position-relative to the container of the comic image -->
-        <div class="comic-container position-relative">
+        <!-- Changed from comic-container to comic-wrapper to avoid the hidden class -->
+        <div class="comic-wrapper position-relative">
             <img id="comic-img" class="comic-image" src="" alt="Garfield Comic">
             
-            <!-- Move favorites counter inside the comic container -->
+            <!-- Counter remains inside the wrapper -->
             <div class="favorites-counter">
                 <i class="fas fa-heart"></i>
                 <span id="favorites-count">0</span>
