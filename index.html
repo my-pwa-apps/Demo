@@ -16,6 +16,33 @@
     <!-- Remove Firebase -->
     <!-- <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script> -->
+
+    <!-- Firebase Configuration and Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-functions-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
+    <script>
+        // Initialize Firebase directly in HTML instead of separate file
+        const firebaseConfig = {
+            apiKey: "AIzaSyDPiKbCgkls0HhesrRgNUPQriw8Qx8x4lQ",
+            authDomain: "garfieldapp-4c237.firebaseapp.com",
+            databaseURL: "https://garfieldapp-4c237-default-rtdb.firebaseio.com",
+            projectId: "garfieldapp-4c237",
+            storageBucket: "garfieldapp-4c237.appspot.com",
+            messagingSenderId: "656782689955",
+            appId: "1:656782689955:web:24471e0eb46bca6c8ef2a9"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // Initialize Firebase Authentication
+        const auth = firebase.auth();
+        auth.signInAnonymously().catch(error => {
+            console.error('Error signing in anonymously:', error);
+        });
+    </script>
 </head>
 <body>
     <header class="header">

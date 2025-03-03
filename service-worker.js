@@ -7,8 +7,12 @@ const urlsToCache = [
     '/main.css',
     '/main.js',
     '/api.js',
+    // Remove firebase-config.js since we're embedding the config directly in index.html
     'https://upload.wikimedia.org/wikipedia/en/thumb/b/bc/Garfield_the_Cat.svg/1200px-Garfield_the_Cat.svg.png',
-    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css'
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css',
+    'https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js',
+    'https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js',
+    'https://www.gstatic.com/firebasejs/9.17.1/firebase-functions-compat.js'
 ];
 
 self.addEventListener('install', event => {
