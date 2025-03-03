@@ -276,7 +276,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             // After successful comic loading, update favorites count
-            const storageDate = formatDateForStorage(currentDate);
             updateFavoritesCount(storageDate);
         } catch (error) {
             console.error('Error loading comic:', error);
