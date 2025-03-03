@@ -612,7 +612,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     registration.pushManager.getSubscription()
                         .then(subscription => {
                             if (!subscription) {
-                                const applicationServerKey = urlB64ToUint8Array('YOUR_PUBLIC_VAPID_KEY'); // Replace with your actual VAPID key
+                                const applicationServerKey = urlB64ToUint8Array('BKGdJva8Kk_ISzgcOMG86r5yEjwEIa8DnGlX08lAy55ga2fFymM0tUXzhaDPu3g71MRYLsFqlG7Ilpm_48BW4NM'); // Replace with your actual VAPID key
                                 registration.pushManager.subscribe({
                                     userVisibleOnly: true,
                                     applicationServerKey
