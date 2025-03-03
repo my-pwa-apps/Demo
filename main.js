@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
         comicImg.classList.remove('loading');
     };
 
-    const showFeedback = (message, isError = false) => {
+    const showFeedback = (message, isError = false, duration = 1500) => {
         // Remove any existing feedback elements
         document.querySelectorAll('.comment-submit-feedback').forEach(el => el.remove());
         
@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             feedback.classList.remove('show');
             setTimeout(() => feedback.remove(), 300);
-        }, 1500); // Show message for less time
+        }, duration);
     };
     
     const updateFavoriteButton = (date) => {
@@ -763,6 +763,88 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Add User ID Management
+    const createUserIdDialog = () => {
+        const dialogOverlay = document.createElement('div');
+        dialogOverlay.className = 'modal-overlay';
+        
+        const dialogContent = document.createElement('div');
+        dialogContent.className = 'modal-content user-id-dialog';
+        
+        dialogContent.innerHTML = `
+            <h3>Garfield Comics Sync</h3>
+            <p>To access your favorites across devices, enter a unique ID.</p>
+            <div class="input-group">
+                <label for="user-id-input">User ID:</label>
+                <input type="text" id="user-id-input" placeholder="Enter a memorable ID" value="${api.getUserInfo().userId}">
+            </div>
+            <div class="input-group">
+                <label for="username-input">Display Name:</label>
+                <input type="text" id="username-input" placeholder="Your display name" value="${api.getUserInfo().username}">
+            </div>
+            <div class="dialog-buttons">
+                <button id="save-user-id" class="btn">Save</button>
+                <button id="cancel-user-id" class="btn btn-secondary">Cancel</button>
+            </div>
+        `;
+        
+        dialogOverlay.appendChild(dialogContent);
+        document.body.appendChild(dialogOverlay);
+        
+        const userIdInput = document.getElementById('user-id-input');
+        const usernameInput = document.getElementById('username-input');
+        const saveButton = document.getElementById('save-user-id');
+        const cancelButton = document.getElementById('cancel-user-id');
+        
+        userIdInput.focus();
+        
+        return new Promise((resolve, reject) => {
+            saveButton.addEventListener('click', async () => {
+                const userId = userIdInput.value.trim();
+                const username = usernameInput.value.trim();
+                
+                if (!userId) {
+                    showFeedback('Please enter a valid User ID', true);
+                    return;
+                }
+                
+                try {
+                    await api.setUserId(userId);
+                    
+                    if (username) {
+                        api.setUsername(username);
+                    }
+                    
+                    dialogOverlay.remove();
+                    resolve({userId, username});
+                    
+                    // Reload favorites with new user ID
+                    await loadFavorites();
+                    showFeedback('User ID saved! Your favorites will sync across devices.');
+                } catch (error) {
+                    showFeedback('Failed to save User ID', true);
+                    reject(error);
+                }
+            });
+            
+            cancelButton.addEventListener('click', () => {
+                dialogOverlay.remove();
+                resolve(null);
+            });
+        });
+    };
+    
+    // Create Account Management Button
+    const createAccountButton = document.createElement('button');
+    createAccountButton.className = 'account-button';
+    createAccountButton.innerHTML = '<i class="fas fa-user"></i>';
+    createAccountButton.title = 'Manage Account';
+    document.body.appendChild(createAccountButton);
+    
+    createAccountButton.addEventListener('click', () => {
+        createUserIdDialog();
+    });
+
     // Event listeners
     prevComicBtn.addEventListener('click', () => {
         currentDate.setDate(currentDate.getDate() - 1);
@@ -900,7 +982,7 @@ document.addEventListener('DOMContentLoaded', () => {
     comicImg.addEventListener('touchmove', handleTouchMove, false);
     comicImg.addEventListener('touchend', handleTouchEnd, false);
 
-    // PWA Installation handling
+    // PWA Installation handling - Enhanced for better visibility and Android support
     let deferredPrompt;
     
     // Create installation banner
@@ -915,20 +997,56 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
     `;
     document.body.appendChild(installBanner);
-    
+
+    // Add persistent install button for Android
+    const androidInstallBtn = document.createElement('button');
+    androidInstallBtn.className = 'android-install-btn';
+    androidInstallBtn.innerHTML = '<i class="fas fa-download"></i> Add to Home Screen';
+    androidInstallBtn.style.display = 'none';
+    document.body.appendChild(androidInstallBtn);
+
     const installBtn = document.getElementById('install-btn');
     const closeInstallBanner = document.getElementById('close-install-banner');
-    
+
+    // Show the appropriate installation prompt based on platform
+    const showInstallPrompt = () => {
+        // Don't show prompts if already installed
+        if (window.matchMedia('(display-mode: standalone)').matches || 
+            window.navigator.standalone === true) {
+            return;
+        }
+        
+        // Check if it's Android
+        const isAndroid = /Android/i.test(navigator.userAgent);
+        
+        if (isAndroid) {
+            // Show Android-specific install button
+            androidInstallBtn.style.display = 'flex';
+            
+            // On Android, also show an installation tip after a short delay
+            setTimeout(() => {
+                showFeedback('Tap "Add to Home Screen" to install', false, 5000);
+            }, 3000);
+        } else if (deferredPrompt) {
+            // Show the install banner for other platforms
+            installBanner.style.display = 'block';
+            
+            // Also show a temporary notification
+            showFeedback('Install this app for offline use!', false, 3000);
+        }
+    };
+
     // Listen for the beforeinstallprompt event
     window.addEventListener('beforeinstallprompt', (e) => {
-        // Prevent Chrome 67 and earlier from automatically showing the prompt
+        // Prevent Chrome from automatically showing the prompt
         e.preventDefault();
         // Stash the event so it can be triggered later
         deferredPrompt = e;
-        // Show the install banner
-        installBanner.style.display = 'block';
+        
+        // Show install prompt with a slight delay for better UX
+        setTimeout(() => showInstallPrompt(), 1000);
     });
-    
+
     // Installation button click handler
     installBtn.addEventListener('click', async () => {
         if (!deferredPrompt) return;
@@ -946,22 +1064,77 @@ document.addEventListener('DOMContentLoaded', () => {
         // Hide the install banner
         installBanner.style.display = 'none';
     });
-    
+
+    // Android install button handler
+    androidInstallBtn.addEventListener('click', () => {
+        // Show installation instructions for Android
+        const instructionsModal = document.createElement('div');
+        instructionsModal.className = 'modal-overlay';
+        instructionsModal.innerHTML = `
+            <div class="modal-content">
+                <h3>Install Garfield Comics</h3>
+                <ol>
+                    <li>Tap the menu icon <i class="fas fa-ellipsis-v"></i> in your browser</li>
+                    <li>Select "Add to Home screen" or "Install App"</li>
+                    <li>Follow the prompts to install</li>
+                </ol>
+                <img src="icons/android-install-guide.png" alt="Android Install Guide" class="install-guide-img">
+                <button class="btn close-modal">Got it!</button>
+            </div>
+        `;
+        document.body.appendChild(instructionsModal);
+        
+        instructionsModal.querySelector('.close-modal').addEventListener('click', () => {
+            instructionsModal.remove();
+        });
+    });
+
     // Close banner button handler
     closeInstallBanner.addEventListener('click', () => {
         installBanner.style.display = 'none';
+        // Store that user dismissed the banner to avoid showing it again too soon
+        localStorage.setItem('installBannerDismissed', Date.now().toString());
     });
-    
+
+    // Check if we should show the install prompt after page load
+    window.addEventListener('load', () => {
+        // Wait a moment for the beforeinstallprompt event
+        setTimeout(() => {
+            const lastDismissed = localStorage.getItem('installBannerDismissed');
+            const hoursPassed = lastDismissed ? 
+                (Date.now() - parseInt(lastDismissed)) / (1000 * 60 * 60) : 
+                null;
+                
+            // Show prompt if it's been at least 24 hours since last dismissed
+            if (!lastDismissed || hoursPassed > 24) {
+                showInstallPrompt();
+            }
+        }, 1500);
+    });
+
     // Listen for the appinstalled event
     window.addEventListener('appinstalled', (event) => {
         console.log('App was successfully installed');
         showFeedback('App installed successfully!');
-        // Hide the install banner
+        // Hide all installation prompts
         installBanner.style.display = 'none';
+        androidInstallBtn.style.display = 'none';
     });
 
     // Initialize app
     initTheme();
     loadFavorites();
     fetchComic(currentDate);
+    
+    // Check if this is the first visit
+    if (!localStorage.getItem('hasVisited')) {
+        // Show welcome message and prompt for user ID
+        setTimeout(() => {
+            showFeedback('Welcome to Garfield Comics! Set up sync to use your favorites across devices.', false, 5000);
+            setTimeout(() => {
+                createUserIdDialog();
+            }, 2000);
+        }, 1000);
+        localStorage.setItem('hasVisited', 'true');
+    }
 });
