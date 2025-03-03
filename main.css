@@ -70,7 +70,7 @@ body {
 }
 
 .header .logo {
-    height: 90px; /* Increased from 70px for a bigger logo */
+    height: 110px; /* Increased from 90px for an even bigger logo */
     width: auto;
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
     transition: all 0.3s ease;
@@ -85,6 +85,7 @@ body {
     max-width: 100%;
     margin: 0;
     padding: 0; /* Removed padding to maximize space */
+    position: relative;
 }
 
 /* New direct comic image styling (no container) */
@@ -210,10 +211,10 @@ body {
     }
 }
 
-/* Navigation Controls - Smaller Date Control */
+/* Navigation Controls - Remove gradient from date control */
 .comic-controls {
     padding: 6px 8px;
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    background: var(--primary-color); /* Solid color instead of gradient */
     border-radius: 4px;
     margin: 8px 0;
     width: auto;
@@ -316,13 +317,24 @@ body {
 }
 
 .nav-button.favorited i {
-    color: var(--secondary-color);
-    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    color: #ff3b30; /* Red color for heart instead of secondary-color */
+    text-shadow: 0 0 10px rgba(255, 59, 48, 0.3);
 }
 
 /* Add highlight for today button when viewing today's comic */
 .nav-button.current-day i {
     color: var(--secondary-color);
+}
+
+/* Add disabled style for navigation buttons */
+.nav-button.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none; /* Prevent clicks */
+}
+
+.nav-button.disabled i {
+    color: #999; /* Grayed out icon */
 }
 
 /* Bottom Navigation - Updated to use the variable */
@@ -521,40 +533,20 @@ body {
     z-index: 1001;
     background: var(--primary-color);
     display: flex;
-    justify-content: space-between; /* Changed from flex-end to space-between */
+    justify-content: flex-end; /* Changed to push buttons to the right */
     padding: 10px;
     margin: -20px -20px 20px -20px; /* Negative margins to stretch full width */
     box-shadow: 0 2px 10px rgba(0,0,0,0.2);
 }
 
-/* Add title to favorites header */
+/* Remove title from favorites header */
 .favorites-title {
-    color: var(--button-text);
-    font-size: 1.2rem;
-    font-weight: 500;
-    margin: 0;
-    display: flex;
-    align-items: center;
+    display: none; /* Hide the favorites title */
 }
 
-/* Clean up duplicate code - remove the redundant close-favorites button styling */
-/* .close-favorites {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    cursor: pointer;
-    z-index: 1001;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-} */
-
+/* Changed close button to match primary color */
 .close-favorites {
-    background: var(--secondary-color);
+    background: var(--primary-color); /* Match main page buttons */
     color: var(--button-text);
     border: none;
     border-radius: 50%;
@@ -567,10 +559,13 @@ body {
     font-size: 1rem;
     transition: background-color 0.2s, transform 0.2s;
     box-shadow: 0 3px 10px var(--shadow-color);
-    /* Fixed positioning */
     position: relative;
     top: auto;
     right: auto;
+}
+
+.close-favorites:hover {
+    background-color: var(--secondary-color); /* Same hover effect as main buttons */
 }
 
 /* Adjust favorites grid to account for the header and add more padding */
@@ -830,10 +825,47 @@ body {
     opacity: 0.95;
 }
 
+/* Favorites counter overlay */
+.favorites-counter {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    display: flex;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    z-index: 50;
+    transition: all 0.3s ease;
+    opacity: 0.7;
+    pointer-events: none; /* Allow clicks to pass through */
+}
+
+.favorites-counter:hover {
+    opacity: 1;
+}
+
+.favorites-counter i {
+    color: #ff3b30;
+    margin-right: 4px;
+    font-size: 0.9rem;
+}
+
+.favorites-counter span {
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+.dark-mode .favorites-counter {
+    background-color: rgba(40, 40, 40, 0.7);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .header .logo {
-        height: 65px; /* Adjusted for mobile */
+        height: 80px; /* Also increase mobile logo from 65px */
     }
     
     .main-content {
@@ -923,6 +955,13 @@ body {
         padding: 4px 8px; /* Even less padding on mobile */
         top: 45px; /* Position slightly higher on mobile */
         max-width: 80%; /* Limit width on small screens */
+    }
+
+    .favorites-counter {
+        bottom: 5px;
+        right: 5px;
+        padding: 3px 6px;
+        font-size: 0.75rem;
     }
 }
 

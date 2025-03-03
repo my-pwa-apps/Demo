@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add dark mode toggle to DOM Elements
     const modeToggleBtn = document.getElementById('mode-toggle'); // Moved here
     const themeColor = document.getElementById('theme-color');
+    const favoritesCountElement = document.getElementById('favorites-count'); // Add this line
     
     // Cache navigation buttons
     const prevComicBtn = document.getElementById('prev-comic');
@@ -97,6 +98,9 @@ document.addEventListener('DOMContentLoaded', () => {
         comicImg.src = comicSrc;
         comicImg.alt = `Garfield Comic for ${formattedDate}`;
         comicDateInput.value = formatDateForStorage(new Date(formattedDate));
+        
+        // Update navigation buttons based on current date
+        updateNavigationButtons();
     };
 
     const showLoadingIndicator = () => {
@@ -270,6 +274,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } finally {
                 hideLoadingIndicator();
             }
+            
+            // After successful comic loading, update favorites count
+            updateFavoritesCount(formatDateForStorage(currentDate));
         } catch (error) {
             console.error('Error loading comic:', error);
             hideLoadingIndicator();
@@ -277,6 +284,9 @@ document.addEventListener('DOMContentLoaded', () => {
             comicImg.src = '';
             comicImg.alt = 'Comic not available';
         }
+        
+        // Update navigation buttons after successful loading
+        updateNavigationButtons();
     };
 
     // Improved function to extract comic image from HTML
@@ -532,16 +542,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const displayFavorites = () => {
         favoritesGrid.innerHTML = '';
         
-        // Update favorites header to include title
+        // Update favorites header - remove title, keep close button
         const favoritesActions = favoritesView.querySelector('.favorites-actions');
         favoritesActions.innerHTML = `
-            <h2 class="favorites-title"><i class="fas fa-star"></i> Your Favorites</h2>
             <button class="close-favorites" title="Close favorites">
                 <i class="fas fa-times"></i>
             </button>
         `;
         
-        // Re-attach event listener to the new close button
+        // Re-attach event listener to the close button
         const closeButton = favoritesActions.querySelector('.close-favorites');
         closeButton.addEventListener('click', () => {
             favoritesView.classList.remove('show');
@@ -925,6 +934,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 await api.removeFavorite(formattedDate);
                 delete favorites[formattedDate];
                 favoriteComicBtn.classList.remove('favorited');
+                // For heart icon, we want it gray when not favorited
                 favoriteComicBtn.querySelector('i').style.color = '';
                 showFeedback('Removed from favorites');
             } else {
@@ -936,10 +946,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 await api.addFavorite(comicData);
                 favorites[formattedDate] = comicData;
                 favoriteComicBtn.classList.add('favorited');
-                favoriteComicBtn.querySelector('i').style.color = getComputedStyle(document.documentElement)
-                    .getPropertyValue('--secondary-color').trim();
+                // For heart icon, we want it red when favorited
+                favoriteComicBtn.querySelector('i').style.color = '#ff3b30'; // Red for heart
                 showFeedback('Added to favorites');
             }
+            
+            // Update favorites count after adding/removing favorite
+            updateFavoritesCount(formattedDate);
         } catch (error) {
             console.error('Error updating favorite:', error);
             showFeedback('Failed to update favorites', true);
@@ -1224,5 +1237,71 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 2000);
         }, 1000);
         localStorage.setItem('hasVisited', 'true');
+    }
+    
+    // Change favorite icon from star to heart
+    if (favoriteComicBtn) {
+        const iconElement = favoriteComicBtn.querySelector('i');
+        if (iconElement) {
+            iconElement.className = 'fas fa-heart';
+        }
+    }
+});
+
+// New function to update navigation buttons state
+const updateNavigationButtons = () => {
+    // Check if current date is the first comic date
+    const isFirstComic = currentDate.getTime() === FIRST_COMIC_DATE.getTime();
+    // Check if current date is today (last available comic)
+    const isLastComic = currentDate.getTime() >= LAST_COMIC_DATE.getTime();
+    
+    // Update first and prev button states
+    firstComicBtn.classList.toggle('disabled', isFirstComic);
+    prevComicBtn.classList.toggle('disabled', isFirstComic);
+    
+    // Update next button state
+    nextComicBtn.classList.toggle('disabled', isLastComic);
+};
+
+// Update view favorites button to use heart
+viewFavoritesBtn.innerHTML = '<i class="fas fa-list"></i>';
+
+// New function to count and update favorites
+const updateFavoritesCount = async (comicDate) => {
+    try {
+        // Get all users' favorites for this comic
+        const snapshot = await firebase.database().ref('favorites').once('value');
+        const allUserFavorites = snapshot.val() || {};
+        
+        let count = 0;
+        
+        // Count how many users have favorited this comic
+        Object.values(allUserFavorites).forEach(userFavorites => {
+            if (userFavorites && userFavorites[comicDate]) {
+                count++;
+            }
+        });
+        
+        // Update the counter in the UI
+        if (favoritesCountElement) {
+            favoritesCountElement.textContent = count;
+        }
+    } catch (error) {
+        console.error('Error counting favorites:', error);
+        // Don't display error to user, just show 0
+        if (favoritesCountElement) {
+            favoritesCountElement.textContent = '0';
+        }
+    }
+};
+
+// Initialize by calling updateNavigationButtons
+window.addEventListener('load', () => {
+    // ...existing initialization code...
+    updateNavigationButtons();
+    
+    // Initial favorites count update
+    if (currentDate) {
+        updateFavoritesCount(formatDateForStorage(currentDate));
     }
 });

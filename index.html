@@ -80,6 +80,12 @@
         <!-- Simplify comic structure - remove nested containers -->
         <img id="comic-img" class="comic-image" src="" alt="Garfield Comic">
         
+        <!-- Add favorites counter overlay -->
+        <div class="favorites-counter">
+            <i class="fas fa-heart"></i>
+            <span id="favorites-count">0</span>
+        </div>
+        
         <div class="comic-controls">
             <div class="comic-selector">
                 <input type="date" id="comic-date" class="date-picker">
@@ -99,8 +105,8 @@
         <button id="first-comic" class="nav-button"><i class="fas fa-backward"></i></button>
         <button id="random-comic" class="nav-button"><i class="fas fa-dice"></i></button>
         <button id="today-comic" class="nav-button"><i class="fas fa-calendar-day"></i></button>
-        <button id="favorite-comic" class="nav-button"><i class="fas fa-star"></i></button>
-        <button id="view-favorites" class="nav-button"><i class="fas fa-bookmark"></i></button>
+        <button id="favorite-comic" class="nav-button"><i class="fas fa-heart"></i></button>
+        <button id="view-favorites" class="nav-button"><i class="fas fa-list"></i></button>
         <button id="next-comic" class="nav-button"><i class="fas fa-arrow-right"></i></button>
     </nav>
     <script src="api.js"></script>
