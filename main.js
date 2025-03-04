@@ -1597,17 +1597,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const updateCounterPosition = () => {
         if (!favoritesCounter || !comicImg) return;
         
-        // Get the actual dimensions of the comic image
-        const imgRect = comicImg.getBoundingClientRect();
-        const containerRect = document.getElementById('comic-container').getBoundingClientRect();
-        
-        // Only adjust position if needed (image smaller than container)
-        if (imgRect.width < containerRect.width) {
-            const rightOffset = (containerRect.width - imgRect.width) / 2;
-            favoritesCounter.style.right = `${rightOffset}px`;
-        } else {
-            favoritesCounter.style.right = '0';
-        }
+        // No need to adjust right offset anymore - counter is centered below the comic
+        // Just make sure it's visible if there's a count, hidden if not
+        const currentDate = formatDateForStorage(currentDate); 
+        const count = window.favoritesCountCache?.[currentDate] || 0;
+        favoritesCounter.style.display = count > 0 ? 'flex' : 'none';
     };
 
     // Create a resize observer to update counter position
@@ -1860,4 +1854,21 @@ document.addEventListener('DOMContentLoaded', () => {
     if (currentDate) {
         updateFavoritesCount(formatDateForStorage(currentDate));
     }
+});
+
+// Move the counter outside the comic wrapper but still in the container
+document.addEventListener('DOMContentLoaded', () => {
+    // ...existing code...
+    
+    // Update the DOM structure to ensure the counter is outside the image
+    // but still within the comic container
+    setTimeout(() => {
+        const comicWrapper = document.getElementById('comic-container');
+        const counter = document.querySelector('.favorites-counter');
+        
+        if (comicWrapper && counter) {
+            // Make sure counter is last child of the comic container
+            comicWrapper.appendChild(counter);
+        }
+    }, 100);
 });

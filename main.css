@@ -925,28 +925,26 @@ body {
 
 /* Favorites counter overlay - Fixed positioning within comic-wrapper */
 .favorites-counter {
-    position: absolute;
-    right: 0;
-    bottom: 0;
+    position: relative;  /* Change from absolute to relative */
+    right: auto;         /* Remove right positioning */
+    bottom: auto;        /* Remove bottom positioning */
     display: flex;
     align-items: center;
+    justify-content: center;
     background-color: rgba(255, 255, 255, 0.7);
     padding: 4px 8px;
-    border-radius: 12px 0 0 0; /* Only round top-left corner */
+    border-radius: 12px;  /* Round all corners */
     font-size: 0.85rem;
-    box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     z-index: 50;
     transition: all 0.3s ease;
     opacity: 0.85;
-    max-width: fit-content;
-    margin: 0;
-    pointer-events: auto; /* Ensure it's interactive if needed */
-    /* Add more constraint to guarantee it stays within the comic */
-    max-width: 98%;
-    min-width: 40px;
+    margin: 5px auto 0;  /* Add margin top and center it */
+    min-width: 60px;
+    max-width: 120px;
     overflow: hidden;
-    /* Ensure it stays inside the comic image */
-    transform-origin: bottom right;
+    width: auto;
+    align-self: center;  /* Center within flex parent */
 }
 
 .favorites-counter:hover {
@@ -1202,6 +1200,7 @@ body {
     .favorites-counter {
         padding: 3px 6px;
         font-size: 0.75rem;
+        margin-top: 8px;  /* Slightly more space on mobile */
         bottom: 0; /* Changed from 5px to 0 */
         right: 5px;
         border-radius: 8px 8px 0 0; /* Smaller radius on mobile */
