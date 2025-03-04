@@ -1065,76 +1065,147 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Add User ID Management
-    const createUserIdDialog = () => {
+    const createUserIdDialogEnhanced = () => {
         const dialogOverlay = document.createElement('div');
         dialogOverlay.className = 'modal-overlay';
         
         const dialogContent = document.createElement('div');
         dialogContent.className = 'modal-content user-id-dialog';
         
+        // Generate a recovery code from user ID (or create a new one if needed)
+        const userInfo = api.getUserInfo();
+        const recoveryCode = userInfo.recoveryCode || generateRecoveryCode(userInfo.userId);
+        
         dialogContent.innerHTML = `
-            <h3>Garfield Comics Sync</h3>
-            <p>To access your favorites across devices, enter a unique ID.</p>
-            <div class="input-group">
-                <label for="user-id-input">User ID:</label>
-                <input type="text" id="user-id-input" placeholder="Enter a memorable ID" value="${api.getUserInfo().userId}">
+            <h3>Garfield Comics Account</h3>
+            
+            <div class="account-status">
+                <i class="fas fa-user-circle"></i>
+                <div>
+                    <strong>${userInfo.username}</strong>
+                    <div>ID: ${userInfo.userId}</div>
+                </div>
             </div>
+            
             <div class="input-group">
                 <label for="username-input">Display Name:</label>
-                <input type="text" id="username-input" placeholder="Your display name" value="${api.getUserInfo().username}">
+                <input type="text" id="username-input" placeholder="Your display name" value="${userInfo.username}">
             </div>
+            
+            <div class="input-group">
+                <label for="email-input">Recovery Email (Optional):</label>
+                <input type="email" id="email-input" placeholder="email@example.com" value="${userInfo.email || ''}">
+                <small>Your email is used only for account recovery.</small>
+            </div>
+            
+            <div class="backup-options">
+                <h4><i class="fas fa-shield-alt"></i> Don't Lose Your Account</h4>
+                <p>Save this recovery code somewhere safe to restore your account on other devices:</p>
+                <div class="backup-code" id="backup-code" title="Click to copy">
+                    ${recoveryCode}
+                </div>
+                <small>Click the code to copy to clipboard.</small>
+                
+                <div class="input-group" style="margin-top: 10px;">
+                    <label for="recovery-input">Restore Account:</label>
+                    <input type="text" id="recovery-input" placeholder="Enter recovery code">
+                    <button id="restore-btn" class="btn" style="margin-top: 5px;">Restore</button>
+                </div>
+            </div>
+            
             <div class="dialog-buttons">
-                <button id="save-user-id" class="btn">Save</button>
-                <button id="cancel-user-id" class="btn btn-secondary">Cancel</button>
+                <button id="save-user-id" class="btn">Save Changes</button>
+                <button id="cancel-user-id" class="btn btn-secondary">Close</button>
             </div>
         `;
         
         dialogOverlay.appendChild(dialogContent);
         document.body.appendChild(dialogOverlay);
         
-        const userIdInput = document.getElementById('user-id-input');
+        // Set up event handlers
         const usernameInput = document.getElementById('username-input');
+        const emailInput = document.getElementById('email-input');
         const saveButton = document.getElementById('save-user-id');
         const cancelButton = document.getElementById('cancel-user-id');
+        const backupCode = document.getElementById('backup-code');
+        const recoveryInput = document.getElementById('recovery-input');
+        const restoreBtn = document.getElementById('restore-btn');
         
-        userIdInput.focus();
-        
-        return new Promise((resolve, reject) => {
-            saveButton.addEventListener('click', async () => {
-                const userId = userIdInput.value.trim();
-                const username = usernameInput.value.trim();
-                
-                if (!userId) {
-                    showFeedback('Please enter a valid User ID', true);
-                    return;
-                }
-                
-                try {
-                    await api.setUserId(userId);
-                    
-                    if (username) {
-                        api.setUsername(username);
-                    }
-                    
-                    dialogOverlay.remove();
-                    resolve({userId, username});
-                    
-                    // Reload favorites with new user ID
-                    await loadFavorites();
-                    showFeedback('User ID saved! Your favorites will sync across devices.');
-                } catch (error) {
-                    showFeedback('Failed to save User ID', true);
-                    reject(error);
-                }
-            });
-            
-            cancelButton.addEventListener('click', () => {
-                dialogOverlay.remove();
-                resolve(null);
-            });
+        // Copy backup code to clipboard when clicked
+        backupCode.addEventListener('click', () => {
+            navigator.clipboard.writeText(recoveryCode)
+                .then(() => {
+                    showFeedback('Recovery code copied to clipboard!');
+                })
+                .catch(err => {
+                    console.error('Failed to copy code:', err);
+                    showFeedback('Failed to copy code. Please select and copy manually.', true);
+                });
         });
+        
+        // Handle account restoration from recovery code
+        restoreBtn.addEventListener('click', async () => {
+            const code = recoveryInput.value.trim();
+            if (!code) {
+                showFeedback('Please enter a recovery code', true);
+                return;
+            }
+            
+            try {
+                const result = await api.restoreFromRecoveryCode(code);
+                if (result.success) {
+                    showFeedback('Account restored successfully!');
+                    dialogOverlay.remove();
+                    
+                    // Reload the page to apply restored account
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    showFeedback('Invalid recovery code', true);
+                }
+            } catch (error) {
+                console.error('Restore error:', error);
+                showFeedback('Failed to restore account', true);
+            }
+        });
+        
+        saveButton.addEventListener('click', async () => {
+            const username = usernameInput.value.trim();
+            const email = emailInput.value.trim();
+            
+            if (!username) {
+                showFeedback('Please enter a display name', true);
+                return;
+            }
+            
+            try {
+                if (username !== userInfo.username) {
+                    api.setUsername(username);
+                }
+                
+                if (email !== userInfo.email) {
+                    await api.setEmail(email);
+                }
+                
+                dialogOverlay.remove();
+                showFeedback('Account updated successfully!');
+                
+                // Update the UI to reflect changes
+                updateUserDisplay();
+                
+            } catch (error) {
+                console.error('Error updating account:', error);
+                showFeedback('Failed to update account', true);
+            }
+        });
+        
+        cancelButton.addEventListener('click', () => {
+            dialogOverlay.remove();
+        });
+        
+        // Focus username by default
+        usernameInput.focus();
     };
-    
+
     // Create Account Management Button
     const createAccountButton = document.createElement('button');
     createAccountButton.className = 'account-button';
@@ -1143,7 +1214,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(createAccountButton);
     
     createAccountButton.addEventListener('click', () => {
-        createUserIdDialog();
+        createUserIdDialogEnhanced();
     });
 
     // Event listeners
@@ -1557,7 +1628,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Enhanced user management with recovery options
-    const createUserIdDialog = () => {
+    const createUserIdDialogEnhanced = () => {
         const dialogOverlay = document.createElement('div');
         dialogOverlay.className = 'modal-overlay';
         
@@ -1758,7 +1829,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             showFeedback('Welcome to Garfield Comics! Set up sync to use your favorites across devices.', false, 5000);
             setTimeout(() => {
-                createUserIdDialog();
+                createUserIdDialogEnhanced();
             }, 2000);
         }, 1000);
         localStorage.setItem('hasVisited', 'true');
