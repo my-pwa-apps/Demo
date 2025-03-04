@@ -14,21 +14,43 @@ class ComicsAPI {
         // Check for existing user ID in localStorage
         this.userId = localStorage.getItem('userId');
         this.username = localStorage.getItem('username');
+        this.email = localStorage.getItem('userEmail');
+        this.recoveryCode = localStorage.getItem('recoveryCode');
         
         if (!this.userId) {
-            // First time user - generate anonymous ID
-            this.userId = 'user_' + Math.random().toString(36).substring(2, 15);
+            // First time user - generate a memorable, user-friendly ID
+            const adjectives = ['Happy', 'Lucky', 'Funny', 'Lazy', 'Clever', 'Brave', 'Jolly', 'Fuzzy'];
+            const nouns = ['Cat', 'Dog', 'Fox', 'Panda', 'Tiger', 'Bear', 'Lion', 'Wolf'];
+            
+            const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+            const noun = nouns[Math.floor(Math.random() * nouns.length)];
+            const num = Math.floor(Math.random() * 1000);
+            
+            this.userId = `${adj}${noun}${num}`.toLowerCase();
             localStorage.setItem('userId', this.userId);
         }
         
         if (!this.username) {
-            // Create a fun, random Garfield-themed username
-            const adjectives = ['Lazy', 'Hungry', 'Sleepy', 'Grumpy', 'Happy', 'Silly', 'Fluffy', 'Orange'];
-            const nouns = ['Cat', 'Lasagna', 'Napper', 'Monday-Hater', 'Friend', 'Garfield', 'Paws'];
-            const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)];
-            const randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
-            this.username = `${randomAdjective}${randomNoun}${Math.floor(Math.random() * 1000)}`;
+            // Create a fun, random Garfield-themed username from the ID parts
+            if (this.userId.match(/[a-z]+[a-z]+\d+/)) {
+                // Extract parts from the user ID if it matches our pattern
+                const match = this.userId.match(/([a-z]+)([a-z]+)(\d+)/);
+                if (match) {
+                    const adj = match[1].charAt(0).toUpperCase() + match[1].slice(1);
+                    const noun = match[2].charAt(0).toUpperCase() + match[2].slice(1);
+                    this.username = `${adj} ${noun}`;
+                } else {
+                    this.username = this.userId;
+                }
+            } else {
+                this.username = this.userId;
+            }
             localStorage.setItem('username', this.username);
+        }
+        
+        // Generate a recovery code if one doesn't exist
+        if (!this.recoveryCode) {
+            this.setRecoveryCode(this._generateRecoveryCode());
         }
     }
 
@@ -42,6 +64,17 @@ class ComicsAPI {
             const oldUserId = this.userId;
             this.userId = userId.trim();
             localStorage.setItem('userId', this.userId);
+            
+            // Generate a new recovery code for the new user ID
+            this.setRecoveryCode(this._generateRecoveryCode());
+            
+            // Save recovery information to Firebase for future restoration
+            await this.db.ref(`users/${this.userId}`).update({
+                username: this.username,
+                recoveryCode: this.recoveryCode,
+                email: this.email,
+                updated: firebase.database.ServerValue.TIMESTAMP
+            });
             
             // If the user has favorites under the old ID, migrate them
             if (oldUserId && oldUserId !== this.userId) {
@@ -69,6 +102,17 @@ class ComicsAPI {
         
         this.username = username.trim();
         localStorage.setItem('username', this.username);
+        
+        // Update username in Firebase
+        try {
+            this.db.ref(`users/${this.userId}`).update({
+                username: this.username,
+                updated: firebase.database.ServerValue.TIMESTAMP
+            });
+        } catch (error) {
+            console.error('Error updating username in Firebase:', error);
+        }
+        
         return this.username;
     }
 
@@ -76,7 +120,9 @@ class ComicsAPI {
     getUserInfo() {
         return {
             userId: this.userId,
-            username: this.username
+            username: this.username,
+            email: this.email,
+            recoveryCode: this.recoveryCode
         };
     }
 
@@ -221,6 +267,106 @@ class ComicsAPI {
         } catch (error) {
             console.error('Error deleting comment:', error);
             throw error;
+        }
+    }
+
+    // Add method to set recovery email
+    setEmail(email) {
+        if (email) {
+            this.email = email.trim();
+            localStorage.setItem('userEmail', this.email);
+        } else {
+            this.email = null;
+            localStorage.removeItem('userEmail');
+        }
+        return this.email;
+    }
+
+    // Add method to set/generate recovery code
+    setRecoveryCode(code) {
+        this.recoveryCode = code;
+        localStorage.setItem('recoveryCode', code);
+        return code;
+    }
+
+    // Generate a recovery code
+    _generateRecoveryCode() {
+        // Create a base64 encoded version of the user ID with some randomness
+        const randomStr = Math.random().toString(36).substring(2, 8);
+        const baseCode = btoa(`${this.userId}-${randomStr}`).replace(/=/g, '');
+        
+        // Format it into groups for readability
+        let formattedCode = '';
+        for (let i = 0; i < baseCode.length; i++) {
+            if (i > 0 && i % 4 === 0) formattedCode += '-';
+            formattedCode += baseCode[i];
+        }
+        
+        return formattedCode;
+    }
+
+    // Restore account from recovery code
+    async restoreFromRecoveryCode(code) {
+        // First check local storage for this code
+        if (code === this.recoveryCode) {
+            return { success: true, message: 'Account already active' };
+        }
+        
+        try {
+            // Try to find the account in Firebase by recovery code
+            const snapshot = await this.db.ref('users').orderByChild('recoveryCode').equalTo(code).once('value');
+            const userData = snapshot.val();
+            
+            if (userData) {
+                // Found a match
+                const userId = Object.keys(userData)[0];
+                const user = userData[userId];
+                
+                // Update local storage with the recovered user data
+                localStorage.setItem('userId', userId);
+                localStorage.setItem('username', user.username || userId);
+                localStorage.setItem('recoveryCode', code);
+                if (user.email) localStorage.setItem('userEmail', user.email);
+                
+                // Update instance variables
+                this.userId = userId;
+                this.username = user.username || userId;
+                this.email = user.email || null;
+                this.recoveryCode = code;
+                
+                return { success: true, message: 'Account restored successfully' };
+            }
+            
+            // If we didn't find it, treat it as a new account with this recovery code
+            // This handles manually entered codes that weren't in our database yet
+            try {
+                // Extract a user ID from the recovery code if possible
+                let newUserId = 'user_' + Math.random().toString(36).substring(2, 10);
+                
+                // Set this as a new account
+                localStorage.setItem('userId', newUserId);
+                localStorage.setItem('username', 'Restored User');
+                localStorage.setItem('recoveryCode', code);
+                
+                this.userId = newUserId;
+                this.username = 'Restored User';
+                this.recoveryCode = code;
+                
+                // Save this to Firebase for future recovery
+                await this.db.ref(`users/${newUserId}`).set({
+                    username: this.username,
+                    recoveryCode: code,
+                    created: firebase.database.ServerValue.TIMESTAMP
+                });
+                
+                return { success: true, message: 'New account created with recovery code' };
+            } catch (error) {
+                console.error('Error creating new account from code:', error);
+                return { success: false, message: 'Failed to create account from code' };
+            }
+        } catch (error) {
+            console.error('Error restoring from recovery code:', error);
+            return { success: false, message: 'Failed to restore account' };
         }
     }
 }

@@ -16,6 +16,15 @@
         ".write": "auth != null || $userId === query.val",
         ".indexOn": ["date"]
       }
+    },
+    "users": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      ".indexOn": ["recoveryCode"],
+      "$userId": {
+        ".read": true,
+        ".write": "auth != null || $userId === query.val"
+      }
     }
   }
 }

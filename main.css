@@ -926,8 +926,8 @@ body {
 /* Favorites counter overlay - Fixed positioning within comic-wrapper */
 .favorites-counter {
     position: absolute;
-    bottom: 0; 
     right: 0;
+    bottom: 0;
     display: flex;
     align-items: center;
     background-color: rgba(255, 255, 255, 0.7);
@@ -945,6 +945,8 @@ body {
     max-width: 98%;
     min-width: 40px;
     overflow: hidden;
+    /* Ensure it stays inside the comic image */
+    transform-origin: bottom right;
 }
 
 .favorites-counter:hover {
@@ -975,6 +977,127 @@ body {
 .replies-wrapper.collapsed {
     height: 0;
     opacity: 0;
+}
+
+/* Enhanced user account dialog */
+.user-id-dialog {
+    max-width: 450px !important;
+}
+
+.account-status {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 4px;
+    background-color: #f0f8ff;
+    border-left: 4px solid #2196F3;
+}
+
+.dark-mode .account-status {
+    background-color: rgba(33, 150, 243, 0.1);
+}
+
+.account-status i {
+    font-size: 1.5rem;
+    margin-right: 10px;
+    color: #2196F3;
+}
+
+.backup-options {
+    margin-top: 15px;
+    padding: 12px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    border-left: 4px solid #4CAF50;
+}
+
+.dark-mode .backup-options {
+    background-color: rgba(76, 175, 80, 0.1);
+}
+
+.backup-code {
+    font-family: monospace;
+    background: #eee;
+    padding: 10px;
+    border-radius: 4px;
+    margin: 10px 0;
+    font-size: 0.9rem;
+    word-break: break-all;
+    cursor: pointer;
+    text-align: center;
+    border: 1px dashed #999;
+}
+
+.dark-mode .backup-code {
+    background: #333;
+    border-color: #555;
+}
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid var(--input-border);
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    font-size: 1rem;
+}
+
+.input-group input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255, 111, 0, 0.1);
+}
+
+.recovery-option {
+    margin-top: 5px;
+    font-size: 0.9rem;
+    color: #2196F3;
+    cursor: pointer;
+    display: inline-block;
+}
+
+.recovery-option:hover {
+    text-decoration: underline;
+}
+
+.dialog-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.btn-secondary {
+    background-color: #ccc;
+    color: #333;
+}
+
+.dark-mode .btn-secondary {
+    background-color: #555;
+    color: #eee;
+}
+
+/* QR code container */
+.qr-code-container {
+    text-align: center;
+    margin: 15px 0;
+}
+
+/* Styles for account backup dialog */
+.backup-dialog h4 {
+    margin: 10px 0;
+    color: var(--primary-color);
 }
 
 /* Responsive Design */

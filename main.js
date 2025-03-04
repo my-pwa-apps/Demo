@@ -1522,10 +1522,235 @@ document.addEventListener('DOMContentLoaded', () => {
         androidInstallBtn.style.display = 'none';
     });
 
+    // Fix heart counter positioning with resize observation
+    const updateCounterPosition = () => {
+        if (!favoritesCounter || !comicImg) return;
+        
+        // Get the actual dimensions of the comic image
+        const imgRect = comicImg.getBoundingClientRect();
+        const containerRect = document.getElementById('comic-container').getBoundingClientRect();
+        
+        // Only adjust position if needed (image smaller than container)
+        if (imgRect.width < containerRect.width) {
+            const rightOffset = (containerRect.width - imgRect.width) / 2;
+            favoritesCounter.style.right = `${rightOffset}px`;
+        } else {
+            favoritesCounter.style.right = '0';
+        }
+    };
+
+    // Create a resize observer to update counter position
+    const setupResizeObserver = () => {
+        if (!comicImg) return;
+        
+        // Check if ResizeObserver is available
+        if (typeof ResizeObserver !== 'undefined') {
+            const resizeObserver = new ResizeObserver(entries => {
+                updateCounterPosition();
+            });
+            
+            resizeObserver.observe(comicImg);
+        } else {
+            // Fallback for browsers that don't support ResizeObserver
+            window.addEventListener('resize', updateCounterPosition);
+        }
+    };
+
+    // Enhanced user management with recovery options
+    const createUserIdDialog = () => {
+        const dialogOverlay = document.createElement('div');
+        dialogOverlay.className = 'modal-overlay';
+        
+        const dialogContent = document.createElement('div');
+        dialogContent.className = 'modal-content user-id-dialog';
+        
+        // Generate a recovery code from user ID (or create a new one if needed)
+        const userInfo = api.getUserInfo();
+        const recoveryCode = userInfo.recoveryCode || generateRecoveryCode(userInfo.userId);
+        
+        dialogContent.innerHTML = `
+            <h3>Garfield Comics Account</h3>
+            
+            <div class="account-status">
+                <i class="fas fa-user-circle"></i>
+                <div>
+                    <strong>${userInfo.username}</strong>
+                    <div>ID: ${userInfo.userId}</div>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="username-input">Display Name:</label>
+                <input type="text" id="username-input" placeholder="Your display name" value="${userInfo.username}">
+            </div>
+            
+            <div class="input-group">
+                <label for="email-input">Recovery Email (Optional):</label>
+                <input type="email" id="email-input" placeholder="email@example.com" value="${userInfo.email || ''}">
+                <small>Your email is used only for account recovery.</small>
+            </div>
+            
+            <div class="backup-options">
+                <h4><i class="fas fa-shield-alt"></i> Don't Lose Your Account</h4>
+                <p>Save this recovery code somewhere safe to restore your account on other devices:</p>
+                <div class="backup-code" id="backup-code" title="Click to copy">
+                    ${recoveryCode}
+                </div>
+                <small>Click the code to copy to clipboard.</small>
+                
+                <div class="input-group" style="margin-top: 10px;">
+                    <label for="recovery-input">Restore Account:</label>
+                    <input type="text" id="recovery-input" placeholder="Enter recovery code">
+                    <button id="restore-btn" class="btn" style="margin-top: 5px;">Restore</button>
+                </div>
+            </div>
+            
+            <div class="dialog-buttons">
+                <button id="save-user-id" class="btn">Save Changes</button>
+                <button id="cancel-user-id" class="btn btn-secondary">Close</button>
+            </div>
+        `;
+        
+        dialogOverlay.appendChild(dialogContent);
+        document.body.appendChild(dialogOverlay);
+        
+        // Set up event handlers
+        const usernameInput = document.getElementById('username-input');
+        const emailInput = document.getElementById('email-input');
+        const saveButton = document.getElementById('save-user-id');
+        const cancelButton = document.getElementById('cancel-user-id');
+        const backupCode = document.getElementById('backup-code');
+        const recoveryInput = document.getElementById('recovery-input');
+        const restoreBtn = document.getElementById('restore-btn');
+        
+        // Copy backup code to clipboard when clicked
+        backupCode.addEventListener('click', () => {
+            navigator.clipboard.writeText(recoveryCode)
+                .then(() => {
+                    showFeedback('Recovery code copied to clipboard!');
+                })
+                .catch(err => {
+                    console.error('Failed to copy code:', err);
+                    showFeedback('Failed to copy code. Please select and copy manually.', true);
+                });
+        });
+        
+        // Handle account restoration from recovery code
+        restoreBtn.addEventListener('click', async () => {
+            const code = recoveryInput.value.trim();
+            if (!code) {
+                showFeedback('Please enter a recovery code', true);
+                return;
+            }
+            
+            try {
+                const result = await api.restoreFromRecoveryCode(code);
+                if (result.success) {
+                    showFeedback('Account restored successfully!');
+                    dialogOverlay.remove();
+                    
+                    // Reload the page to apply restored account
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    showFeedback('Invalid recovery code', true);
+                }
+            } catch (error) {
+                console.error('Restore error:', error);
+                showFeedback('Failed to restore account', true);
+            }
+        });
+        
+        saveButton.addEventListener('click', async () => {
+            const username = usernameInput.value.trim();
+            const email = emailInput.value.trim();
+            
+            if (!username) {
+                showFeedback('Please enter a display name', true);
+                return;
+            }
+            
+            try {
+                if (username !== userInfo.username) {
+                    api.setUsername(username);
+                }
+                
+                if (email !== userInfo.email) {
+                    await api.setEmail(email);
+                }
+                
+                dialogOverlay.remove();
+                showFeedback('Account updated successfully!');
+                
+                // Update the UI to reflect changes
+                updateUserDisplay();
+                
+            } catch (error) {
+                console.error('Error updating account:', error);
+                showFeedback('Failed to update account', true);
+            }
+        });
+        
+        cancelButton.addEventListener('click', () => {
+            dialogOverlay.remove();
+        });
+        
+        // Focus username by default
+        usernameInput.focus();
+    };
+
+    // Generate a memorable recovery code
+    function generateRecoveryCode(userId) {
+        // List of memorable words
+        const adjectives = ['happy', 'lucky', 'sunny', 'clever', 'brave', 'mighty', 'super', 'jolly'];
+        const animals = ['cat', 'dog', 'fox', 'bear', 'wolf', 'tiger', 'eagle', 'panda'];
+        
+        // Create a deterministic but seemingly random selection based on userId
+        let hash = 0;
+        for (let i = 0; i < userId.length; i++) {
+            hash = ((hash << 5) - hash) + userId.charCodeAt(i);
+            hash |= 0; // Convert to 32bit integer
+        }
+        
+        // Use the hash to select words
+        const adj = adjectives[Math.abs(hash) % adjectives.length];
+        const animal = animals[Math.abs(hash >> 4) % animals.length];
+        
+        // Add some numeric component from the hash
+        const num = Math.abs(hash) % 1000;
+        
+        // Combine with userId to ensure uniqueness
+        const code = `${adj}-${animal}-${num}-${userId.substring(0, 6)}`;
+        
+        // Store the recovery code
+        api.setRecoveryCode(code);
+        
+        return code;
+    }
+
+    // Update the UI to show the current user's information
+    function updateUserDisplay() {
+        const userInfo = api.getUserInfo();
+        
+        // Update the account button with first letter of username
+        const accountBtn = document.querySelector('.account-button');
+        if (accountBtn && userInfo.username) {
+            const firstLetter = userInfo.username.charAt(0).toUpperCase();
+            accountBtn.innerHTML = `<span>${firstLetter}</span>`;
+            accountBtn.title = `Account: ${userInfo.username}`;
+        }
+    }
+
     // Initialize app
     initTheme();
     loadFavorites();
     fetchComic(currentDate);
+    setupResizeObserver(); // Add this line to set up the resize observer
+
+    // Initial counter positioning
+    setTimeout(updateCounterPosition, 500); // Wait for image to load
+
+    // Update user display
+    updateUserDisplay();
     
     // Check if this is the first visit
     if (!localStorage.getItem('hasVisited')) {
