@@ -1597,11 +1597,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const updateCounterPosition = () => {
         if (!favoritesCounter || !comicImg) return;
         
-        // No need to adjust right offset anymore - counter is centered below the comic
-        // Just make sure it's visible if there's a count, hidden if not
-        const currentDate = formatDateForStorage(currentDate); 
-        const count = window.favoritesCountCache?.[currentDate] || 0;
+        // Make sure the counter is visible when there's a count
+        const storageDate = formatDateForStorage(currentDate); 
+        const count = window.favoritesCountCache?.[storageDate] || 0;
         favoritesCounter.style.display = count > 0 ? 'flex' : 'none';
+        
+        // No need to change positioning - CSS absolute positioning handles it
     };
 
     // Create a resize observer to update counter position
@@ -1860,14 +1861,16 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
     // ...existing code...
     
-    // Update the DOM structure to ensure the counter is outside the image
-    // but still within the comic container
+    // Ensure the comic wrapper has relative positioning for absolute counter positioning
     setTimeout(() => {
         const comicWrapper = document.getElementById('comic-container');
         const counter = document.querySelector('.favorites-counter');
         
         if (comicWrapper && counter) {
-            // Make sure counter is last child of the comic container
+            // Make sure wrapper has relative positioning so counter positions correctly
+            comicWrapper.style.position = 'relative';
+            
+            // Move counter inside the wrapper for proper relative positioning
             comicWrapper.appendChild(counter);
         }
     }, 100);

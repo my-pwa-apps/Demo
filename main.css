@@ -923,28 +923,25 @@ body {
     border: 1px solid var(--input-border);
 }
 
-/* Favorites counter overlay - Fixed positioning within comic-wrapper */
+/* Favorites counter overlay - Position at bottom right with flat top side */
 .favorites-counter {
-    position: relative;  /* Change from absolute to relative */
-    right: auto;         /* Remove right positioning */
-    bottom: auto;        /* Remove bottom positioning */
+    position: absolute;  /* Change back to absolute for precise positioning */
+    right: 0;            /* Align to right edge */
+    bottom: 0;           /* Align to bottom edge */
     display: flex;
     align-items: center;
-    justify-content: center;
     background-color: rgba(255, 255, 255, 0.7);
     padding: 4px 8px;
-    border-radius: 12px;  /* Round all corners */
+    border-radius: 12px 0 0 12px;  /* Rounded everywhere except top-right */
     font-size: 0.85rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     z-index: 50;
     transition: all 0.3s ease;
     opacity: 0.85;
-    margin: 5px auto 0;  /* Add margin top and center it */
-    min-width: 60px;
-    max-width: 120px;
+    margin: 0;           /* Remove margin */
+    min-width: 40px;
+    max-width: 100px;
     overflow: hidden;
-    width: auto;
-    align-self: center;  /* Center within flex parent */
 }
 
 .favorites-counter:hover {
@@ -1200,10 +1197,7 @@ body {
     .favorites-counter {
         padding: 3px 6px;
         font-size: 0.75rem;
-        margin-top: 8px;  /* Slightly more space on mobile */
-        bottom: 0; /* Changed from 5px to 0 */
-        right: 5px;
-        border-radius: 8px 8px 0 0; /* Smaller radius on mobile */
+        border-radius: 8px 0 0 8px;  /* Smaller radius on mobile but same shape */
     }
 }
 
