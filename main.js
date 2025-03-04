@@ -43,16 +43,16 @@ document.addEventListener('DOMContentLoaded', () => {
         nextComicBtn.classList.toggle('disabled', isLastComic);
     };
 
-    // New function to count and update favorites - Fixed calculation for specific comic
-    const updateFavoritesCount = async (comicDate) => {
+    // Improved updateFavoritesCount - with forced refresh option
+    const updateFavoritesCount = async (comicDate, forceRefresh = false) => {
         if (!comicDate) return;
         
         try {
-            // Optimize by checking cache first
-            if (window.favoritesCountCache && window.favoritesCountCache[comicDate]) {
+            // Only use cache if not forcing a refresh
+            if (!forceRefresh && window.favoritesCountCache && window.favoritesCountCache[comicDate]) {
                 const cachedCount = window.favoritesCountCache[comicDate];
                 updateFavoritesCountUI(cachedCount);
-                return;
+                return cachedCount;
             }
             
             const snapshot = await firebase.database().ref('favorites').once('value');
@@ -73,12 +73,14 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Update UI with the count
             updateFavoritesCountUI(count);
+            return count;
         } catch (error) {
             console.error('Error counting favorites:', error);
             // Hide on error
             if (favoritesCounter) {
                 favoritesCounter.style.display = 'none';
             }
+            return 0;
         }
     };
 
@@ -354,7 +356,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             // After successful comic loading, update favorites count
-            updateFavoritesCount(storageDate);
+            // Force refresh to ensure the count is accurate on initial load
+            updateFavoritesCount(storageDate, true);
         } catch (error) {
             console.error('Error loading comic:', error);
             hideLoadingIndicator();
@@ -1184,9 +1187,16 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchComic(currentDate);
     });
 
+    // Improved favorite button click handler with immediate counter update
     favoriteComicBtn.addEventListener('click', async () => {
         const formattedDate = formatDateForStorage(currentDate); // Use yyyy-mm-dd format
         try {
+            // Get current count before update
+            const currentCount = window.favoritesCountCache?.[formattedDate] || 
+                                await updateFavoritesCount(formattedDate);
+            
+            let newCount = currentCount;
+            
             if (favorites[formattedDate]) {
                 await api.removeFavorite(formattedDate);
                 delete favorites[formattedDate];
@@ -1194,6 +1204,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 // For heart icon, ensure we use a consistent color scheme
                 favoriteComicBtn.querySelector('i').style.color = '';
                 showFeedback('Removed from favorites');
+                
+                // Optimistically decrease the count
+                newCount = Math.max(0, currentCount - 1);
             } else {
                 const comicData = {
                     date: formattedDate, // Use consistent yyyy-mm-dd format
@@ -1206,13 +1219,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 // For heart icon, ensure we use red (#ff3b30) consistently
                 favoriteComicBtn.querySelector('i').style.color = '#ff3b30';
                 showFeedback('Added to favorites');
+                
+                // Optimistically increase the count
+                newCount = currentCount + 1;
             }
             
-            // Update favorites count after adding/removing favorite
-            updateFavoritesCount(formattedDate);
+            // Immediately update UI with our optimistic count
+            if (window.favoritesCountCache) {
+                window.favoritesCountCache[formattedDate] = newCount;
+            }
+            updateFavoritesCountUI(newCount);
+            
+            // Then fetch the actual count from the server to ensure accuracy
+            setTimeout(() => {
+                updateFavoritesCount(formattedDate, true); // Force refresh from server
+            }, 500);
         } catch (error) {
             console.error('Error updating favorite:', error);
             showFeedback('Failed to update favorites', true);
+            // Refresh the count to ensure it's accurate after an error
+            updateFavoritesCount(formattedDate, true);
         }
     });
 
