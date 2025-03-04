@@ -197,6 +197,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const showFeedback = (message, isError = false, duration = 1500) => {
+        // Skip feedback for certain messages we want to suppress
+        if (message === 'Added to favorites' || 
+            message === 'Removed from favorites' ||
+            message.includes('mode enabled')) {
+            return; // Don't show these messages
+        }
+        
         // Remove any existing feedback elements
         document.querySelectorAll('.comment-submit-feedback').forEach(el => el.remove());
         
@@ -204,8 +211,20 @@ document.addEventListener('DOMContentLoaded', () => {
         feedback.className = `comment-submit-feedback ${isError ? 'error' : ''}`;
         feedback.textContent = message;
         document.body.appendChild(feedback);
+        
+        // Calculate positioning to avoid overlaps with UI elements
+        const accountBtn = document.querySelector('.account-button');
+        const modeToggleBtn = document.getElementById('mode-toggle');
+        
+        if (accountBtn && modeToggleBtn) {
+            // Position notification below both account and mode toggle buttons
+            feedback.style.top = '60px'; // Place below top buttons
+        }
+        
+        // Show the notification
         feedback.classList.add('show');
         
+        // Remove after duration
         setTimeout(() => {
             feedback.classList.remove('show');
             setTimeout(() => feedback.remove(), 300);
@@ -1042,8 +1061,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Save user preference
         localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
         
-        // Show feedback
-        showFeedback(`${isDarkMode ? 'Dark' : 'Light'} mode enabled`);
+        // Removed showFeedback call - visual button change is enough feedback
     };
     
     // Add event listener for dark mode toggle
@@ -1258,7 +1276,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchComic(currentDate);
     });
 
-    // Improved favorite button click handler with immediate counter update
+    // Improved favorite button click handler - Remove toast notifications
     favoriteComicBtn.addEventListener('click', async () => {
         const formattedDate = formatDateForStorage(currentDate); // Use yyyy-mm-dd format
         try {
@@ -1274,7 +1292,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 favoriteComicBtn.classList.remove('favorited');
                 // For heart icon, ensure we use a consistent color scheme
                 favoriteComicBtn.querySelector('i').style.color = '';
-                showFeedback('Removed from favorites');
+                // Removed showFeedback call - visual feedback is enough
                 
                 // Optimistically decrease the count
                 newCount = Math.max(0, currentCount - 1);
@@ -1289,7 +1307,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 favoriteComicBtn.classList.add('favorited');
                 // For heart icon, ensure we use red (#ff3b30) consistently
                 favoriteComicBtn.querySelector('i').style.color = '#ff3b30';
-                showFeedback('Added to favorites');
+                // Removed showFeedback call - visual feedback is enough
                 
                 // Optimistically increase the count
                 newCount = currentCount + 1;
@@ -1602,7 +1620,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const count = window.favoritesCountCache?.[storageDate] || 0;
         favoritesCounter.style.display = count > 0 ? 'flex' : 'none';
         
-        // No need to change positioning - CSS absolute positioning handles it
+        // Make sure counter is properly positioned at bottom right of comic
+        // This ensures it works across all screen sizes
+        const comicContainer = document.getElementById('comic-container');
+        if (comicContainer) {
+            // Make sure the container has the correct positioning
+            comicContainer.style.position = 'relative';
+        }
     };
 
     // Create a resize observer to update counter position
@@ -1625,17 +1649,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Enhanced user management with recovery options
     const createUserIdDialogEnhancedV2 = () => {
         const dialogOverlay = document.createElement('div');
-        dialogOverlay.className = 'modal-overlay';
-        
-        const dialogContent = document.createElement('div');
-        dialogContent.className = 'modal-content user-id-dialog';
-        
-        // Generate a recovery code from user ID (or create a new one if needed)
-        const userInfo = api.getUserInfo();
-        const recoveryCode = userInfo.recoveryCode || generateRecoveryCode(userInfo.userId);
-        
-        dialogContent.innerHTML = `
-            <h3>Garfield Comics Account</h3>
             
             <div class="account-status">
                 <i class="fas fa-user-circle"></i>

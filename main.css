@@ -923,22 +923,22 @@ body {
     border: 1px solid var(--input-border);
 }
 
-/* Favorites counter overlay - Position at bottom right with flat top side */
+/* Favorites counter overlay - Position at bottom right with flat TOP side */
 .favorites-counter {
-    position: absolute;  /* Change back to absolute for precise positioning */
+    position: absolute;  /* Keep absolute for precise positioning */
     right: 0;            /* Align to right edge */
     bottom: 0;           /* Align to bottom edge */
     display: flex;
     align-items: center;
     background-color: rgba(255, 255, 255, 0.7);
     padding: 4px 8px;
-    border-radius: 12px 0 0 12px;  /* Rounded everywhere except top-right */
+    border-radius: 0 0 0 12px;  /* Make the TOP side flat (only round bottom-left corner) */
     font-size: 0.85rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     z-index: 50;
     transition: all 0.3s ease;
     opacity: 0.85;
-    margin: 0;           /* Remove margin */
+    margin: 0;           /* No margin to ensure it touches the edge */
     min-width: 40px;
     max-width: 100px;
     overflow: hidden;
@@ -1190,14 +1190,14 @@ body {
     .comment-submit-feedback {
         font-size: 0.75rem; /* Smaller on mobile */
         padding: 4px 8px; /* Even less padding on mobile */
-        top: 45px; /* Position slightly higher on mobile */
-        max-width: 80%; /* Limit width on small screens */
+        top: 50px;  /* Higher position on mobile to avoid buttons */
+        max-width: 75%;
     }
 
     .favorites-counter {
         padding: 3px 6px;
         font-size: 0.75rem;
-        border-radius: 8px 0 0 8px;  /* Smaller radius on mobile but same shape */
+        border-radius: 0 0 0 8px;  /* Keep top flat but adjust radius for mobile */
     }
 }
 
