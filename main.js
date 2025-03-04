@@ -1628,7 +1628,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Enhanced user management with recovery options
-    const createUserIdDialogEnhanced = () => {
+    const createUserIdDialogEnhancedV2 = () => {
         const dialogOverlay = document.createElement('div');
         dialogOverlay.className = 'modal-overlay';
         
