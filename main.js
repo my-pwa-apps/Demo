@@ -1649,6 +1649,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Enhanced user management with recovery options
     const createUserIdDialogEnhancedV2 = () => {
         const dialogOverlay = document.createElement('div');
+        dialogOverlay.className = 'modal-overlay';
+        
+        const dialogContent = document.createElement('div');
+        dialogContent.className = 'modal-content user-id-dialog';
+        
+        // Generate a recovery code from user ID (or create a new one if needed)
+        const userInfo = api.getUserInfo();
+        const recoveryCode = userInfo.recoveryCode || generateRecoveryCode(userInfo.userId);
+        
+        dialogContent.innerHTML = `
+            <h3>Garfield Comics Account</h3>
             
             <div class="account-status">
                 <i class="fas fa-user-circle"></i>
